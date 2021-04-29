@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Order Book Histogram Graphic</title>
+      <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+		<style type="text/css">
+            #left_bottom_content {
+                position: absolute;
+                top: 150px;
+                left: 150px;
+                font-size: 14px;
+                width: 960px;
+                height: 1080px;
+                background-color: white;
+            }	 
+            #left_bottom_content_chart1 {
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                background-color: white;
+                width: 680px;
+                height: 300px;
+            }
+
+									
+            #bar-chart-1 {
+                width: 680px;
+                height: 300px;
+            }	
+			
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: black;
+				shape-rendering: crispEdges;
+			}
+			
+			.axis text {
+				font-family: garamond);
+				font-size: 14px;
+			}
+		</style>
+	</head>
+	<body>
+	
+	 <div id = "left_bottom_content">
+            <div id="left_bottom_content_chart1" align = "center"  style = "position: relative; top: 50px">
+				<div id="bar-chart-1" >
+			    </div>
+            </div>
+
+        </div>
+		
+		<script type="text/javascript">
+			
+			
+		
+			
+			//Width and height
+			var w = 188;
+			var h = 280;
+			var barPadding = 1;
+			var padding = 30;
+			var heightpadding = 60;
+			
+			//Create scale functions
+
+			var yScale1 = d3.scale.linear()
+								 .domain([0, 80])
+								 .range([h - 10 + heightpadding, 10 + heightpadding]);
+
+								 
+			var dataSetRestofMarketBuy = [ 55, 50, 62, 72, 75, 58, 53, 64, 55, 42,
+			                               35, 38, 40, 60, 63, 45, 40, 49, 49, 36,
+							               32, 36, 40, 60, 63, 45, 40, 49, 49, 36, 
+							               11, 14, 15, 20, 20, 19, 14, 15, 20, 13, 
+			                               5, 10, 13, 9, 11, 15, 12, 8, 15, 10];
+			var dataSetRestofMarketSell = [ 28, 60, 62, 72, 65, 68, 63, 74, 75, 62,
+			                               23, 38, 38, 55, 53, 45, 50, 59, 59, 46,
+							               14, 26, 29, 45, 43, 39, 34, 45, 44, 34,
+			                                4, 5, 10, 6, 8, 7, 4, 8, 8, 12, 
+			                                0, 0, 0, 0, 0, 0, 5, 0, 5, 5];
+			
+			//Create SVG element
+			var svg1 = d3.select("#bar-chart-1")
+						.append("svg:svg")
+						.attr("width", 6 * w + 2*padding)
+						.attr("height", 3 * h)
+						.attr("y", 20);
+
+			svg1.selectAll("rect")
+			   .data(dataSetRestofMarketBuy)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+					if (i <= 9) { return i * (w / (dataSetRestofMarketBuy.length - 40)) + padding ;} 
+                    if (i >= 10 && i < 20) { return (i - 10) * (w / (dataSetRestofMarketBuy.length - 40)) + padding ;}
+					if (i >= 20 && i < 30) { return (i - 20) * (w / (dataSetRestofMarketBuy.length - 40)) + padding ;}
+					if (i >= 30 && i < 40) { return (i - 30) * (w / (dataSetRestofMarketBuy.length - 40)) + padding ;}
+					if (i >= 40) { return (i - 40) * (w / (dataSetRestofMarketBuy.length - 40)) + padding ;}					
+			   })
+			   .attr("y", function(d) {
+			   		return h - (d*3) - 10 + heightpadding;
+			   })
+			   .attr("width", (w) / (dataSetRestofMarketBuy.length - 40) - barPadding)
+			   .attr("height", function(d) {
+			   		return d*3;
+			   })
+			   .attr("fill", function(d, i) {
+					if (i <= 9) { return "#606060";}
+					if (i >= 10 && i < 20) { return "#990099";}
+					if (i >= 20 && i < 30) { return "#FF8000";}
+					if (i >= 30 && i < 40) { return "green";}
+					if (i >= 40) { return "blue";}
+					})
+				.attr("stroke", "black");
+			   
+			var svg2 = svg1
+						.append("svg:svg")
+						.attr("width", 4*w + 2* padding)
+						.attr("height", 3*h);
+
+			svg2.selectAll("rect")
+			   .data(dataSetRestofMarketSell)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+					if (i <= 9) { return i * (w / (dataSetRestofMarketSell.length - 40)) + padding + w; } 
+					if (i >= 10 && i < 20) { return (i - 10) * (w / (dataSetRestofMarketBuy.length - 40)) + padding + w;}
+					if (i >= 20 && i < 30) { return (i - 20) * (w / (dataSetRestofMarketBuy.length - 40)) + padding + w;}
+					if (i >= 30 && i < 40) { return (i - 30) * (w / (dataSetRestofMarketBuy.length - 40)) + padding + w;}
+					if (i >= 40) { return (i - 40) * (w / (dataSetRestofMarketBuy.length - 40)) + padding + w;}	
+			   })
+			   .attr("y", function(d) {
+			   		return h - (d*3) - 10 + heightpadding;
+			   })
+			   .attr("width", (w) / (dataSetRestofMarketSell.length - 40) - barPadding)
+			   .attr("height", function(d) {
+			   		return d*3;
+			   })
+			   .attr("fill", function(d, i) {
+					if (i <= 9) { return "#606060";}
+					if (i >= 10 && i < 20) { return "#990099";}
+					if (i >= 20 && i < 30) { return "#FF8000";}
+					if (i >= 30 && i < 40) { return "green";}
+					if (i >= 40) { return "blue";}
+					})
+				.attr("stroke", "Red");
+			   
+
+			
+			var yAxis1 = d3.svg.axis()
+							  .scale(yScale1)
+							  .orient("left")
+							  .ticks(5);  
+			
+			svg1.append("g")
+				.attr("class", "axis")
+				.attr("font-family", "garamond")
+				.attr("transform", "translate(" + 29 + ",0)")
+				.call(yAxis1);
+				
+			
+			
+		   			
+			//Text Labels for Histograms 
+			svg1.append("text")
+               .attr("x", 220)
+               .attr("y", 50)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "18px")
+           .attr("font-weight", "bold")
+           .attr("fill", "black")
+           .text("Aggregation of Market Makers’ Order Books");
+		   
+		   svg1.append("text")
+               .attr("x", 120)
+               .attr("y", 245)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "18px")
+           .attr("font-weight", "bold")
+           .attr("fill", "White")
+           .text("Buy Orders");
+		   
+		   svg1.append("text")
+               .attr("x", 320)
+               .attr("y", 245)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "18px")
+           .attr("font-weight", "bold")
+           .attr("fill", "White")
+           .text("Sell Orders");
+		   
+			svg1.append("text")
+               .attr("x", 220)
+               .attr("y", 345)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "12px")
+           .attr("font-weight", "bold")
+           .attr("fill", "black")
+           .text("Price");
+		   
+		   svg1.append("text")
+               .attr("x", -200)
+               .attr("y", 8)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "12px")
+           .attr("font-weight", "bold")
+           .attr("fill", "black")
+		   .attr("transform", "rotate(-90)")
+           .text("Number of Orders");
+		   
+		   		   
+		   //Text Labels for Legend 
+			svg1.append("text")
+               .attr("x", 80)
+               .attr("y", 380)
+           .attr("text-anchor", "end")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "black")
+           .text("MM1:");
+		   
+		   svg1.append("text")
+               .attr("x", 80)
+               .attr("y", 410)
+           .attr("text-anchor", "end")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "black")
+           .text("MM2:");
+		   
+		   svg1.append("text")
+               .attr("x", 210)
+               .attr("y", 380)
+           .attr("text-anchor", "end")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "black")
+           .text("MM3:");
+		   
+		   svg1.append("text")
+               .attr("x", 210)
+               .attr("y", 410)
+           .attr("text-anchor", "end")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "black")
+           .text("MM4:");
+		   
+		   svg1.append("text")
+               .attr("x", 340)
+               .attr("y", 380)
+           .attr("text-anchor", "end")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "black")
+           .text("MM5:");
+		   
+		   //Squares for legend
+		   
+		   svg1.append("rect")
+               .attr("x", 85)
+               .attr("y", 365)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "blue")
+		   .attr("stroke", "Black");
+		   
+		   svg1.append("rect")
+               .attr("x", 115)
+               .attr("y", 365)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "blue")
+		   .attr("stroke", "Red");
+		   
+		   svg1.append("text")
+               .attr("x", 95)
+               .attr("y", 380)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("B");
+		   
+		   svg1.append("text")
+               .attr("x", 125)
+               .attr("y", 380)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("A")
+		   
+		   svg1.append("rect")
+               .attr("x", 85)
+               .attr("y", 395)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "green")
+		   .attr("stroke", "Black");
+		   
+		   svg1.append("rect")
+               .attr("x", 115)
+               .attr("y", 395)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "green")
+		   .attr("stroke", "Red");
+		   
+		   svg1.append("text")
+               .attr("x", 95)
+               .attr("y", 410)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("B");
+		   
+		   svg1.append("text")
+               .attr("x", 125)
+               .attr("y", 410)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("A");
+		   
+		   svg1.append("rect")
+               .attr("x", 215)
+               .attr("y", 365)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "#FF8000")
+		   .attr("stroke", "Black");
+		   
+		   svg1.append("rect")
+               .attr("x", 245)
+               .attr("y", 365)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "#FF8000")
+		   .attr("stroke", "Red");
+		   
+		   svg1.append("text")
+               .attr("x", 225)
+               .attr("y", 380)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("B");
+		   
+		   svg1.append("text")
+               .attr("x", 255)
+               .attr("y", 380)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("A");
+		   
+		   svg1.append("rect")
+               .attr("x", 215)
+               .attr("y", 395)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "#990099")
+		   .attr("stroke", "Black");
+		   
+		   svg1.append("rect")
+               .attr("x", 245)
+               .attr("y", 395)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "#990099")
+		   .attr("stroke", "Red");
+		   
+		   svg1.append("text")
+               .attr("x", 225)
+               .attr("y", 410)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("B");
+		   
+		   svg1.append("text")
+               .attr("x", 255)
+               .attr("y", 410)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("A");
+		   
+		   svg1.append("rect")
+               .attr("x", 355)
+               .attr("y", 365)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "#606060")
+		   .attr("stroke", "Black");
+
+		   svg1.append("rect")
+               .attr("x", 385)
+               .attr("y", 365)
+           .attr("width", 20)
+           .attr("height", 20)
+		   .attr("fill", "#606060")
+		   .attr("stroke", "Red");
+		   
+		   svg1.append("text")
+               .attr("x", 365)
+               .attr("y", 380)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("B");
+		   
+		   svg1.append("text")
+               .attr("x", 395)
+               .attr("y", 380)
+           .attr("text-anchor", "middle")
+           .attr("font-family", "garamond")
+           .attr("font-size", "15px")
+           .attr("font-weight", "bold")
+           .attr("fill", "white")
+           .text("A");
+		   	   
+	
+		</script>
+	</body>
+</html>

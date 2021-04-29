@@ -1,0 +1,57 @@
+;; Setup for Trader
+;********************************************************************************************************************************************************************************
+to MI_Setup 
+  set typeOfTrader "MarketImpact"
+  set speed (random-poisson 5)
+  set tradeSpeedAdjustment 1
+  set tradeStatus "Cancel"
+  set orderNumber 0
+  set countticks 0
+  set tradeAccount 0
+  set sharesOwned 0
+  set totalBought 0
+  set totalSold 0
+  set averageBoughtPrice 0
+  set averageSoldPrice 0
+  set totalCanceled 0
+  set buysell "B"
+  set modify 0
+  set openOrders []
+end
+
+;Strategy
+;********************************************************************************************************************************************************************************
+to marketImpactStrategy
+  foreach openorders [
+    ask ?[ 
+      if(AuditTrail = true)[
+        writetofile OrderID "Cancel" OrderPrice OrderQuantity TraderWhoType tradernumber 1 "-" HON1 HON2
+      ]
+      die
+    ]
+  ]
+  
+  set openorders []
+   
+     set tradeStatus "Sell"
+     set tradePrice price - 10
+     set tradeQuantity MIQuantity
+     
+  hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+end
+
+;*****************************************************************************************************************************
+; Reporting
+;*****************************************************************************************************************************
+
+to-report avgSharesMarketImpact
+ ifelse((count turtles with [typeOfTrader = "MarketImpact"]) > 0)
+ [report precision (((sum [sharesOwned] of traders with [typeOfTrader = "MarketImpact"])) / (count traders with [typeOfTrader = "MarketImpact"])) 2
+ ][report 0]
+end
+
+to-report accountValueMarketImpact
+  ifelse((count turtles with [typeOfTrader = "MarketImpact"]) > 0)
+  [report precision ((sum [tradeAccount] of traders with [typeOfTrader = "MarketImpact"]) / (count traders with [typeOfTrader = "MarketImpact"])) 2 
+  ][report 0]
+end
