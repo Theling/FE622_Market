@@ -1,5 +1,8 @@
 # FE622_Market
 
+## Agents
+
+
 ## To do
 
 - Add reddit trader agent
