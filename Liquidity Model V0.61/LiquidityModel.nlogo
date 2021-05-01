@@ -109,11 +109,11 @@ turtles-own [ movingAverageDIS totalCanceled reversion typeOfTrader traderNumber
               checkTraderNumber buysell modify              
               ]
 
-breed [orders an-order】 ; ???
+breed [orders an-order] ; orders is the name of the order set, an-order is the name of a single member.
 
 orders-own [ OrderPrice OrderB/A OrderID OrderTraderID OrderQuantity PriceOrder TraderWho TraderWhoType HON1 HON2]
 
-breed [traders a-trader]
+breed [traders a-trader]; again traders is one breed
 
 traders-own [openOrders PriceOrder OrderPositionDesired ]
 
@@ -170,7 +170,7 @@ end
 
 to setup-economy  ;; turtles procedure for setup
   set traderListNumbers [0]
-  create-traders #_Liquidity_Demander [LD_Setup]
+  create-traders #_Liquidity_Demander [LD_Setup]  ; create-<breed> syntax, #_Liquidity_Demander is from the interface.
   create-traders #_Market_Makers [MM_Setup]
   create-traders #_Liquidity_Supplier[LS_Setup]
   create-traders 1[FS_Setup]
