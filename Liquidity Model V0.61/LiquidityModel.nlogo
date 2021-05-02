@@ -843,7 +843,6 @@ to-report frequency [val thelist]
   report length filter [? = val] thelist
 end
 
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 534
@@ -1479,7 +1478,7 @@ ProbabilityBuyofLiqyuidityDemander
 ProbabilityBuyofLiqyuidityDemander
 0
 100
-50
+47.5
 1
 1
 NIL
@@ -1890,7 +1889,7 @@ INPUTBOX
 1741
 281
 privateViewPrice
-110
+90
 1
 0
 Number
