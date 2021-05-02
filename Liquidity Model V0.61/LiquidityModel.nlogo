@@ -11,7 +11,7 @@ __includes ["market_maker_agent.nls" "liquidity_demander_agent.nls" "orders.nls"
 ; currentAsk - current best ask price
 ; currentBid - current best bid price
 
-; numberBid, numberAsk - ploting variables 
+; numberBid, numberAsk - ploting variables
 ; volume - single agent volume of executed trades
 ; volatility - volatility of the market
 ; currentPriceVol - used to determine the price volatility
@@ -27,10 +27,10 @@ __includes ["market_maker_agent.nls" "liquidity_demander_agent.nls" "orders.nls"
 
 ; currentSQD - the current ask book depth
 ; pastMA - previous moving average price
-; stablePrice - moving average stable price for market 
-; stopTriggered - market stop lose trigger mechanisum 
+; stablePrice - moving average stable price for market
+; stopTriggered - market stop lose trigger mechanisum
 ; stopTriggerCounter - market stop lose trigger mechanisum tick counter
-; priceReturns - list of all price returns 
+; priceReturns - list of all price returns
 
 ; transactionCost - cost of trading
 ; aggresiveBid - number of market orders to buy
@@ -40,7 +40,7 @@ __includes ["market_maker_agent.nls" "liquidity_demander_agent.nls" "orders.nls"
 ; pastPrices - keeps track of previous prices
 ; period -allows to keep track of a sequence in a trade strategy
 
-; tradeWipeQueueB, tradeWipeQueueA - list contrining all the trades that occured in a tick period, used for updating the orderbok 
+; tradeWipeQueueB, tradeWipeQueueA - list contrining all the trades that occured in a tick period, used for updating the orderbok
 ; arrayQ - array contrainging the quantities for each order
 ; tradeExNumber - used to keep track of the order of actions in the audit trail book
 ; traderListNumbers - used in verfying theat each trader has a unique trader account number
@@ -52,20 +52,20 @@ __includes ["market_maker_agent.nls" "liquidity_demander_agent.nls" "orders.nls"
 
 extensions [array table]
 
-Globals [price buyQueue sellQueue orderNumber tradeWipeQueue tradeMatch currentAsk currentBid 
-        numberBid numberAsk volume volatility currentPriceVol totalVolume currentVol 
-        movingAverage currentMA movingAverageV currentMAV currentBQD 
-        currentSQD pastMA priceReturns 
+Globals [price buyQueue sellQueue orderNumber tradeWipeQueue tradeMatch currentAsk currentBid
+        numberBid numberAsk volume volatility currentPriceVol totalVolume currentVol
+        movingAverage currentMA movingAverageV currentMAV currentBQD
+        currentSQD pastMA priceReturns
         transactionCost aggresiveBid aggresiveAsk minPriceValue randNumOT pastPrices period
         tradeWipeQueueB tradeWipeQueueA arrayQ tradeExNumber traderListNumbers
         currentBuyInterest currentSellInterest currentBuyInterestPrice currentSellInterestPrice maxBuyInterest
-        priceVolatilityVar 
-        
+        priceVolatilityVar
+
         BuyOrderQueue SellOrderQueue ; ???
         numberOrderBid numberOrderAsk
         currentOrderAsk currentOrderBid
         MatchID
-        
+
         marketImpactValue
       ]
 
@@ -97,16 +97,16 @@ Globals [price buyQueue sellQueue orderNumber tradeWipeQueue tradeMatch currentA
 ; averageSoldPrice - average sell price
 ; marketDumpTimer - variable to impliment stop lose orders
 ; marketPauseTickCount - market pause mechanisum for agents to stop exicuting tranactions for a select quanitty of time (150 ticks) while the market is pause from a quick price drop
- 
+
 ; checkTraderNumber - used in verfying theat each trader has a unique trader account number
 ; buysell - used in the audit trail to determine if the trader is acting on the Buy (B) or Sell (S) side of the order book
-; modify - used to determine if an order has been modified 
- 
-turtles-own [ movingAverageDIS totalCanceled reversion typeOfTrader traderNumber 
-              tradeStatus tradeQuantity tradeOrderNumber speed tradeSpeedAdjustment tradePrice 
-              tradeOrderForm countticks sharesOwned tradeAccount totalBought totalSold 
+; modify - used to determine if an order has been modified
+
+turtles-own [ movingAverageDIS totalCanceled reversion typeOfTrader traderNumber
+              tradeStatus tradeQuantity tradeOrderNumber speed tradeSpeedAdjustment tradePrice
+              tradeOrderForm countticks sharesOwned tradeAccount totalBought totalSold
               averageBoughtPrice averageSoldPrice
-              checkTraderNumber buysell modify              
+              checkTraderNumber buysell modify
               ]
 
 breed [orders an-order] ; orders is the name of the order set, an-order is the name of a single member.
@@ -136,11 +136,11 @@ to setup
   set currentSQD 2
   set transactionCost 0
   set pastMA 400
-  
+
   set currentOrderBid 399
   set currentOrderAsk 401
   set price 400
-  
+
   my-setup-plots
   set arrayQ array:from-list n-values 10000 ["B"]
   carefully [file-delete "OrderBook.csv"][]
@@ -150,12 +150,12 @@ to setup
   set tradeExNumber 0
   set numberAsk []
   set numberBid []
-  
+
   set BuyOrderQueue []
   set SellOrderQueue []
   set numberOrderAsk []
   set numberOrderBid []
-  
+
   carefully [file-delete "OrderBook.csv"][]
   carefully [file-delete "OrderBookDepth.csv"][]
   carefully [file-delete "AgentData.csv"][]
@@ -175,7 +175,7 @@ to setup-economy  ;; turtles procedure for setup
   create-traders #_Liquidity_Supplier[LS_Setup]
   create-traders 1[FS_Setup]
   create-traders 1[MI_Setup]
-  
+
   set buyQueue []
   set sellQueue []
   set tradeWipeQueue []
@@ -197,59 +197,59 @@ to go
   set currentSellInterest 0
   set currentBuyInterestPrice 0
   set currentSellInterestPrice 0
-   
+
   if( ticks mod 10 = 0)
   [
     set aggresiveBid 0
     set aggresiveAsk 0
   ]
-  
+
   if (ticks = (MIPeriod)) [
     set marketImpactValue price
   ]
   if (ticks = (MIPeriod + 5)) [
     set marketImpactValue (marketImpactValue - price)
-  ]    
-        
+  ]
+
   ask traders [
-  
+
     set countticks (countticks + 1)
-         
+
     if (typeOfTrader = "LiquidityDemander") [
       if countticks >= (liquidityDemanderTradeLength + tradeSpeedAdjustment) [
         set tradeStatus "Transact"
-        
+
         if(ticks > 5000) [set totalCanceled (totalCanceled + tradeQuantity)]
-    
+
         set speed int(random-poisson liquidity_Demander_Arrival_Rate) + 1
       ]
     ]
-  
+
     if (typeOfTrader = "MarketMakers") [
         if countticks >= (marketMakerTradeLength + tradeSpeedAdjustment)[
           set tradeStatus "Transact"
-           
+
           set speed int(random-poisson market_Makers_Arrival_Rate) + 2
         ]
     ]
-    
+
     if (typeOfTrader = "LiquiditySupplier") [
       if countticks >= (liquiditySupplierTradeLength + tradeSpeedAdjustment)  [
         set tradeStatus "Transact"
-  
+
         if(ticks > 5000) [set totalCanceled (totalCanceled + tradeQuantity)]
-     
+
         set speed int(random-poisson liquidity_Supplier_Arrival_Rate) + 1
       ]
     ]
-    
+
     if (typeOfTrader = "ForcedSale" and QuntitySale > 0) [
       if ((countticks >= (5 + tradeSpeedAdjustment)) and (PeriodtoStartExecution < ticks) and (PeriodtoEndExecution >= ticks)) [
         set tradeStatus "Transact"
         set speed 5
       ]
     ]
-    
+
     if (typeOfTrader = "MarketImpact" and MIQuantity > 0) [
       if ((countticks >= (5 + tradeSpeedAdjustment)) and (MIPeriod = ticks)) [
         set tradeStatus "Transact"
@@ -258,85 +258,85 @@ to go
     ]
 
     set tradeAccount ((sharesOwned * ( price / 4) - averageBoughtPrice * totalBought + averageSoldPrice * totalSold) - (transactionCost * (totalBought + totalSold)))
-  
+
     if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" ) and tradeStatus = "Buy" and tradeQuantity > 0)[
       set currentBuyInterestPrice ((currentBuyInterestPrice * currentBuyInterest + tradeQuantity * tradePrice) / (currentBuyInterest + tradeQuantity))
       set currentBuyInterest (currentBuyInterest + tradeQuantity)
     ]
-    
+
     if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" ) and tradeStatus = "Sell" and tradeQuantity > 0)[
       set currentSellInterestPrice ((currentSellInterestPrice * currentSellInterest + tradeQuantity * tradePrice) / (currentSellInterest + tradeQuantity))
       set currentSellInterest (currentSellInterest + tradeQuantity)
     ]
-  
+
     if (tradeStatus = "Transact")[
       if countticks > (speed + tradeSpeedAdjustment)  [
         set countticks 0
         set modify 0
-        
-        if typeOfTrader = "LiquidityDemander" 
-        [ 
+
+        if typeOfTrader = "LiquidityDemander"
+        [
           liquidityDemanderStrategy
         ]
-                   
+
         if typeOfTrader = "MarketMakers"
         [
           strategyMedium
-        ] 
-                  
-        if typeOfTrader = "LiquiditySupplier" 
-        [ 
+        ]
+
+        if typeOfTrader = "LiquiditySupplier"
+        [
           liquiditySupplierStrategy
         ]
-        
-        if typeOfTrader = "ForcedSale" 
-        [ 
+
+        if typeOfTrader = "ForcedSale"
+        [
           forcedSaleStrategy
         ]
-        
-        if typeOfTrader = "MarketImpact" 
-        [ 
+
+        if typeOfTrader = "MarketImpact"
+        [
           marketImpactStrategy
         ]
-                     
+
         if(tradeStatus = "Buy")
         [
            set buysell "B"
         ]
-        
+
         if(tradeStatus = "Sell")
         [
            set buysell "S"
         ]
-        
-        if(tradePrice <= currentOrderBid and tradeStatus = "Buy")[set aggresiveBid (aggresiveBid + tradeQuantity)]  
-        if(tradePrice >= currentOrderAsk and tradeStatus = "Sell")[set aggresiveAsk (aggresiveAsk + tradeQuantity)]  
+
+        if(tradePrice <= currentOrderBid and tradeStatus = "Buy")[set aggresiveBid (aggresiveBid + tradeQuantity)]
+        if(tradePrice >= currentOrderAsk and tradeStatus = "Sell")[set aggresiveAsk (aggresiveAsk + tradeQuantity)]
       ]
-      
+
       let transactionVar 0
-      
-      if (ticks > 5000 ) [     
-        transactionOrder   
+
+      if (ticks > 5000 ) [
+        transactionOrder
       ]
-    ]  
+    ]
   ]
-  
+
   if ( count orders with [OrderB/A = "Buy"] > 0 )
   [
     set numberOrderBid []
     histoSetupTestBuy
     setup-plot2
   ]
-  
+
   if ( count orders with [OrderB/A = "Sell"] > 0 )
   [
     set numberOrderAsk []
     histoSetupTestSell
-    
+
   ]
- 
+
   do-plots
-    
+
   if(ticks >= 5000)
   [
     if((ticks - 4700) mod 600 = 0 )
@@ -344,7 +344,7 @@ to go
       calculatePriceReturns
     ]
   ]
-    
+
   if(ticks > 12000) [
     set minPriceValue min movingAverage
   ]
@@ -354,39 +354,39 @@ to go
   if(AgentFile = true and ticks > 4999)[
     writetofileagent
   ]
-  
+
   tick
 end
 
 ;********************************************************************************************************************************************************************************
-;Function for transacting Trades to be run in the Market 
+;Function for transacting Trades to be run in the Market
 ;********************************************************************************************************************************************************************************
 
 to transactionOrder
   if ( count orders with [OrderB/A = "Buy"] > 0 and count orders with [OrderB/A = "Sell"] > 0) [
     let firstInBuyQueue first (sort-on [(- PriceOrder)] orders with [OrderB/A = "Buy"] )
     let firstInSellQueue first (sort-on [PriceOrder] orders with [OrderB/A = "Sell"])
-    
+
     let quantityDiff 0
     let orderBidID 0
     let orderAskID 0
     let traderBid 0
     let traderAsk 0
-    
+
     let traderBidNum 0
     let traderAskNum 0
-    
+
     let traderBidType 0
     let traderAskType 0
-    
+
     let orderQunatityBid 0
     let orderQunatityAsk 0
-    
+
     let orderHON1Bid 0
     let orderHON2Bid 0
     let orderHON1Ask 0
     let orderHON2Ask 0
-        
+
     ask firstInBuyQueue [
       set currentOrderBid OrderPrice
       set quantityDiff OrderQuantity
@@ -396,7 +396,7 @@ to transactionOrder
       set orderHON1Bid HON1
       set orderHON2Bid HON2
     ]
-    
+
     ask firstInSellQueue [
       set currentOrderAsk OrderPrice
       set quantityDiff (quantityDiff - OrderQuantity)
@@ -406,93 +406,93 @@ to transactionOrder
       set orderHON1Ask HON1
       set orderHON2Ask HON2
     ]
-      
-    if (currentOrderAsk <= currentOrderBid) [    
+
+    if (currentOrderAsk <= currentOrderBid) [
       if ( quantityDiff = 0 ) [
-        
+
         ask traderBid [ set openorders remove firstInBuyQueue openorders set traderBidNum traderNumber set traderBidType typeOfTrader]
         ask traderAsk [ set openorders remove firstInSellQueue openorders set traderAskNum traderNumber set traderAskType typeOfTrader]
         ask firstInBuyQueue [ die ]
         ask firstInSellQueue [ die ]
-        
+
         if orderBidID > orderAskID [
           set price currentOrderAsk
         ]
         if orderBidID < orderAskID [
-          set price currentOrderBid      
-        ] 
-        
+          set price currentOrderBid
+        ]
+
         if(AuditTrail = true)[
           set MatchID (MatchID + 1)
-                   
+
           writetofile orderBidID "Bought" price orderQunatityBid traderBidType traderBidNum 1 MatchID orderHON1Bid orderHON2Bid
           writetofile orderAskID "Sold" price orderQunatityAsk traderAskType traderAskNum 2 MatchID orderHON1Ask orderHON2Ask
         ]
-        
+
         ask traderBid [ set sharesOwned (sharesOwned + orderQunatityBid) set averageBoughtPrice ((averageBoughtPrice * totalBought + (price / 4) * orderQunatityBid) / (totalBought + orderQunatityBid)) set totalBought (totalBought + orderQunatityBid) ]
         ask traderAsk [ set sharesOwned (sharesOwned - orderQunatityAsk) set averageSoldPrice ((averageSoldPrice * totalSold + (price / 4) * orderQunatityAsk) / (totalSold + orderQunatityAsk)) set totalSold (totalSold + orderQunatityAsk)]
         set volume (volume + orderQunatityAsk)
-        
-      ] 
-      
+
+      ]
+
       if ( quantityDiff > 0 ) [
-        
+
         ask firstInBuyQueue [ set OrderQuantity quantityDiff ]
         ask traderBid [ set traderBidNum traderNumber set traderBidType typeOfTrader]
         ask traderAsk [ set openorders remove firstInSellQueue openorders set traderAskNum traderNumber set traderAskType typeOfTrader]
         ask firstInSellQueue [ die ]
-        
+
         if orderBidID > orderAskID [
           set price currentOrderAsk
         ]
         if orderBidID < orderAskID [
-          set price currentOrderBid      
+          set price currentOrderBid
         ]
-        
+
         if(AuditTrail = true)[
           set MatchID (MatchID + 1)
 
           writetofile orderBidID "Bought" price orderQunatityAsk traderBidType traderBidNum 1 MatchID orderHON1Bid orderHON2Bid
           writetofile orderAskID "Sold" price orderQunatityAsk traderAskType traderAskNum 2 MatchID orderHON1Ask orderHON2Ask
         ]
-        
-        ask traderBid [ set sharesOwned (sharesOwned + orderQunatityAsk) 
+
+        ask traderBid [ set sharesOwned (sharesOwned + orderQunatityAsk)
           set averageBoughtPrice ((averageBoughtPrice * totalBought + (price / 4) * orderQunatityAsk) / (totalBought + orderQunatityAsk)) set totalBought (totalBought + orderQunatityAsk)]
-        
-        ask traderAsk [ set sharesOwned (sharesOwned - orderQunatityAsk) 
+
+        ask traderAsk [ set sharesOwned (sharesOwned - orderQunatityAsk)
           set averageSoldPrice ((averageSoldPrice * totalSold + (price / 4) * orderQunatityAsk) / (totalSold + orderQunatityAsk)) set totalSold (totalSold + orderQunatityAsk)  ]
         set volume (volume + orderQunatityAsk)
-        
-        transactionOrder  
-      ]  
-      
+
+        transactionOrder
+      ]
+
       if ( quantityDiff < 0 ) [
-              
+
         ask traderBid [ set openorders remove firstInBuyQueue openorders set traderBidNum traderNumber set traderBidType typeOfTrader]
         ask firstInSellQueue [ set OrderQuantity ( -1 * quantityDiff) ]
         ask traderAsk [ set traderAskNum traderNumber set traderAskType typeOfTrader]
         ask firstInBuyQueue [ die ]
-        
+
         if orderBidID > orderAskID [
           set price currentOrderAsk
         ]
         if orderBidID < orderAskID [
-          set price currentOrderBid      
+          set price currentOrderBid
         ]
-        
+
         if(AuditTrail = true)[
           set MatchID (MatchID + 1)
-          
+
           writetofile orderBidID "Bought" price orderQunatityBid traderBidType traderBidNum 1 MatchID orderHON1Bid orderHON2Bid
           writetofile orderAskID "Sold" price orderQunatityBid traderAskType traderAskNum 2 MatchID orderHON1Ask orderHON2Ask
         ]
-        
+
         ask traderBid [ set sharesOwned (sharesOwned + orderQunatityBid) set averageBoughtPrice ((averageBoughtPrice * totalBought + (price / 4) * orderQunatityBid) / (totalBought + orderQunatityBid)) set totalBought (totalBought + orderQunatityBid)]
         ask traderAsk [ set sharesOwned (sharesOwned - orderQunatityBid) set averageSoldPrice ((averageSoldPrice * totalSold + (price / 4) * orderQunatityBid) / (totalSold + orderQunatityBid)) set totalSold (totalSold + orderQunatityBid)]
         set volume (volume + orderQunatityBid)
-        
-        transactionOrder  
-      ]   
+
+        transactionOrder
+      ]
     ]
   ]
 end
@@ -501,12 +501,12 @@ end
 ;Calculate Price Returns
 ;********************************************************************************************************************************************************************************
 
-to calculatePriceReturns 
+to calculatePriceReturns
   set priceReturns lput (ln((item (length movingAverage - 1) movingAverage) / (item (length movingAverage - 30) movingAverage)))  priceReturns
 end
 
 ;********************************************************************************************************************************************************************************
-;Ploting of Booking to the Histogram, Price, Volume, Volatility, Moving Average ....  
+;Ploting of Booking to the Histogram, Price, Volume, Volatility, Moving Average ....
 ;********************************************************************************************************************************************************************************
 
 to histoSetupTestBuy
@@ -518,7 +518,7 @@ to histoSetupTestBuy
       ]
     ]
   ]
-end 
+end
 
 to histoSetupTestSell
   let lengthofList count orders with [OrderB/A = "Sell"]
@@ -529,8 +529,8 @@ to histoSetupTestSell
       ]
     ]
   ]
-end 
-  
+end
+
 to my-setup-plots ;;initialize plots
   clear-all-plots
   setup-plot2
@@ -549,7 +549,7 @@ to my-setup-plots ;;initialize plots
   setup-plot12
   setup-plot13
 end
-  
+
 to setup-plot2
   set-current-plot "Distribution of Bid/Ask"
   set-plot-x-range ((price / 4) * 100 - 1000) ((price / 4 ) * 100 + 1000)
@@ -577,7 +577,7 @@ end
 
 to setup-plot6
   set-current-plot "Ten Minute Moving Average Price"
-  plot currentMA 
+  plot currentMA
 end
 
 to setup-plot7
@@ -616,20 +616,20 @@ to setup-plot13
 end
 
 to do-plots
- 
+
   set-current-plot "Distribution of Bid/Ask"
   set-plot-x-range ((price / 4) * 100 - 1000) ((price / 4 ) * 100 + 1000)
   plot-pen-reset
   set-plot-pen-mode 1
-  let n2 numberOrderBid 
-  set-current-plot-pen "Bid" 
+  let n2 numberOrderBid
+  set-current-plot-pen "Bid"
   histogram n2
   set-histogram-num-bars 100
   let a2 numberOrderAsk
   set-current-plot-pen "Ask"
   histogram a2
   set-histogram-num-bars 100
-   
+
   if(ticks > 5000)
   [
     set-current-plot "Price Returns"
@@ -637,28 +637,28 @@ to do-plots
     set-plot-pen-mode 1
     set-plot-x-range -0.025 .025
     set-histogram-num-bars 51
-    histogram priceReturns 
+    histogram priceReturns
   ]
-    
+
   if(ticks > 5000)
   [
     set-current-plot "Price"
     plot (price / 4)
-    
+
       set-current-plot "Daily Price"
       plot (price / 4)
       set-plot-x-range (ticks - 6440) (ticks - 5000)
-    
-  
+
+
     if((ticks mod 10) = 8)[
       set-current-plot "Volume"
       set-plot-pen-mode 1
-      
+
       plot volume
-      
+
       set totalVolume (totalVolume + volume)
     ]]
-  
+
   if(ticks  > 1000)[
     if((ticks mod 10) = 8)[
      set volatility lput ((price / 4) ) volatility
@@ -675,21 +675,21 @@ to do-plots
      set volume 0
     ]
   ]
-   
+
   set currentVol 0
   if(ticks >= 5600)[
     let lengthVol length volatility
-    let subVol sublist volatility (lengthVol - 10) lengthVol  
+    let subVol sublist volatility (lengthVol - 10) lengthVol
     let maxVol max subVol
     let minVol min subVol
     set currentVol ln (maxVol / minVol)
       set-current-plot "Volatility"
       let lPR length priceReturns
       plot (sqrt(abs (item (lPR - 1) priceReturns)) * 15.87)
-      
-    
+
+
   ]
-  
+
   set-current-plot "Ten Minute Moving Average Price"
   if(ticks > 5000)[
     let lengthMA length volatility
@@ -699,10 +699,10 @@ to do-plots
     let avgMA mean subMA
     set pastMA item 1 subMB
     set currentMA avgMA
-    plot currentMA  
+    plot currentMA
   ]
-  
-  
+
+
   set-current-plot "Ten Minute Moving Average Volume"
   set currentMAV 2
   if(ticks >= 5000)[
@@ -712,8 +712,8 @@ to do-plots
     set currentMAV avgMAV
     plot currentMAV
   ]
-  
-  
+
+
   set-current-plot "Market Depth"
   set currentBQD 2
   set currentSQD 2
@@ -723,28 +723,28 @@ to do-plots
     set-current-plot-pen "Ask"
     plot sum [OrderQuantity] of orders with [OrderB/A = "Sell"]
   ]
- 
+
   set-current-plot "Bid-Ask Spread"
   if(ticks >= 5000)[
     ifelse ((currentOrderAsk - currentOrderBid) / 2 >= 0)[
-      plot (currentOrderAsk - currentOrderBid) / 2 
+      plot (currentOrderAsk - currentOrderBid) / 2
     ][
       plot 0
     ]
   ]
-  
+
   set-current-plot "Turnover Rate"
   if(ticks >= 5000)[
     plot (currentMAV / (sum [OrderQuantity] of orders with [OrderB/A = "Sell"] + 1))
   ]
-  
-  if(ticks >= 5000)[     
+
+  if(ticks >= 5000)[
     if((ticks mod 10) = 9)[
       set-current-plot "Aggressive Trades"
-      plot (aggresiveBid - aggresiveAsk)  
+      plot (aggresiveBid - aggresiveAsk)
     ]
   ]
-  
+
   if(ticks >= 5000)[
     set-current-plot "Averages Shared Owned"
     set-current-plot-pen "MM"
@@ -756,15 +756,15 @@ to do-plots
     set-current-plot-pen "Forced"
     plot avgSharesForcedSale
   ]
-  
+
   if(ticks >= 6000)[
     set-current-plot "Kyle Obizhaeva Measure"
     set-current-plot-pen "pen-0"
     let lPR length priceReturns
-    ;plot (((sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) / 0.02)*((2.08 / 10000)*((100 * (sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) * (140 * currentMAV + 1)) / (0.02 * 40 * 1000000))^(-1 / 3) + (12.08 / 10000)*( 4 /(0.01 * (140 * currentMAV + 1)))^(0.5)))  
-    print (((sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) / 0.02)*((2.08 / 10000)*((100 * (sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) * (140 * currentMAV + 1)) / (0.02 * 40 * 1000000))^(-1 / 3) + (12.08 / 10000)*( 4 /(0.01 * (140 * currentMAV + 1)))^(0.5))) 
+    ;plot (((sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) / 0.02)*((2.08 / 10000)*((100 * (sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) * (140 * currentMAV + 1)) / (0.02 * 40 * 1000000))^(-1 / 3) + (12.08 / 10000)*( 4 /(0.01 * (140 * currentMAV + 1)))^(0.5)))
+    print (((sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) / 0.02)*((2.08 / 10000)*((100 * (sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) * (140 * currentMAV + 1)) / (0.02 * 40 * 1000000))^(-1 / 3) + (12.08 / 10000)*( 4 /(0.01 * (140 * currentMAV + 1)))^(0.5)))
   ]
-  
+
   if(ticks >= 5000)[
     set-current-plot "Average Profit-Loss"
     set-current-plot-pen "MM"
@@ -774,7 +774,7 @@ to do-plots
     set-current-plot-pen "Supplier"
     plot accountValueLiquiditySupplier
   ]
-  
+
 end
 
 ;********************************************************************************************************************************************************************************
@@ -782,11 +782,11 @@ end
 ;********************************************************************************************************************************************************************************
 
 to-report volumeTraded
-  report precision ((sum [totalBought + totalSold] of traders)) 0 
+  report precision ((sum [totalBought + totalSold] of traders)) 0
 end
 
 to-report volumeCanceled
-  report precision ((sum [totalCanceled] of traders)) 0 
+  report precision ((sum [totalCanceled] of traders)) 0
 end
 
 to-report day
@@ -795,7 +795,7 @@ end
 
 to-report hour
   ifelse (int (((ticks ) / 60) + 9.5 - ((5000) / 60))) mod 24 > 12 [ report (int (((ticks) / 60) + 9.5 - ((5000) / 60)) mod 24) - 12
-    ][  
+    ][
       ifelse (int (((ticks ) / 60) + 9.5 - ((5000) / 60)) mod 24 = 0)[
         report 12
         ][
@@ -808,12 +808,12 @@ to-report hourOutput
 end
 
 to-report minute
-  report int(((((ticks ) / 60) + 9.5 - ((5000) / 60)) mod 1)* 60) 
+  report int(((((ticks ) / 60) + 9.5 - ((5000) / 60)) mod 1)* 60)
 end
 
 to-report AMPM
     ifelse (int (((ticks) / 60) + 9.5 - ((5000) / 60))) mod 24 > 11 [ report "AM"
-    ][  
+    ][
       report "PM"
     ]
 end
@@ -843,7 +843,7 @@ to-report frequency [val thelist]
   report length filter [? = val] thelist
 end
 
-  
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 534
@@ -946,7 +946,7 @@ SLIDER
 #_Liquidity_Demander
 0
 250
-200
+250
 1
 1
 NIL
@@ -961,7 +961,7 @@ SLIDER
 #_Market_Makers
 0
 8
-5
+8
 1
 1
 NIL
@@ -972,7 +972,7 @@ TEXTBOX
 34
 1855
 52
-Numbers of Traders                              Trader Order Duration(Mins)               Trader Order Arrival Rate(Mins)                  Trader Order Size Multipler                    
+Numbers of Traders                              Trader Order Duration(Mins)               Trader Order Arrival Rate(Mins)                  Trader Order Size Multipler
 12
 0.0
 1
@@ -1371,7 +1371,7 @@ MONITOR
 214
 146
 259
-Current Order ID 
+Current Order ID
 ordernumber
 0
 1
@@ -1479,7 +1479,7 @@ ProbabilityBuyofLiqyuidityDemander
 ProbabilityBuyofLiqyuidityDemander
 0
 100
-50
+48.75
 1
 1
 NIL
@@ -1524,7 +1524,7 @@ market_Makers_Arrival_Rate
 market_Makers_Arrival_Rate
 0
 120
-10
+0
 5
 1
 NIL
@@ -1663,7 +1663,7 @@ INPUTBOX
 867
 306
 QuntitySale
-1000
+0
 1
 0
 Number
@@ -1819,7 +1819,7 @@ SWITCH
 177
 DepthFile
 DepthFile
-1
+0
 1
 -1000
 
@@ -1877,23 +1877,34 @@ NIL
 0.0
 10.0
 0.0
-0.0010
+0.001
 true
 false
 "" ""
 PENS
 "pen-0" 1.0 0 -7500403 true "" ""
 
+INPUTBOX
+1586
+221
+1741
+281
+privateViewPrice
+110
+1
+0
+Number
+
 @#$#@#$#@
 ## ## WHAT IS IT?
 
 This is a model of traders (agents) trading in futures market (OFR Exchange), placing orders in to a limit order book. The agents are constrcuted using the methodology in Paddrik et al. (2012). The agents are meant to represent 6 trading catagories. The 6 classes of agents are of:
 
-Liquidity Demander - 
+Liquidity Demander -
 
-Market Maker - 
+Market Maker -
 
-Liquidity Suppler - 
+Liquidity Suppler -
 
 
 
@@ -1903,15 +1914,15 @@ At the model set up with a given number of each types of traders and the amount 
 
 The market is set up as a 'Price-Time Priority' basis. The highest bid order and the lowest ask order consitutes the best market for the given futures contract.
 
-    - If it is a buy order it is matched against sell orders sorted by their price            followed by creation time. 
+    - If it is a buy order it is matched against sell orders sorted by their price            followed by creation time.
     - If it is a sell order it is matched against buy orders sorted by their price            followed by creation time.
 
 Agent specfic code can be examined by looking at the include button under the code tab. This will all you to see the underlying algorithms and functions that agents contain. This structure is meant to allow new agents to be introduced to the model with ease.
 
 ## ## HOW TO USE IT
 
-Pressing the SETUP button will clear all transcations and initialize the traders.    
-Pressing the GO button will start the trades. Once the GO button is selected the traders are given the opportunitiy to place orders into the market before it opens, to fill the order book. 
+Pressing the SETUP button will clear all transcations and initialize the traders.
+Pressing the GO button will start the trades. Once the GO button is selected the traders are given the opportunitiy to place orders into the market before it opens, to fill the order book.
 
 The 'Number of Traders' section allows you to use a slider bar to input the number of trades of each time they would like to see in the Market. The 'Time Between New Orders' slider can be used to determine the length a order is left in the limit order book for each trader type.
 
@@ -1920,9 +1931,9 @@ The 'Audit Trail' switch when On produces an audit trail of data that can be use
 
 ## ## CREDITS AND REFERENCES
 
-Paddrik, M., Hayes, R., Todd, A., Yang, S., Scherer, W.  & Beling, P.  (2012).  An Agent-based Model of the E-Mini S&P 500 and the Flash Crash.  IEEE Computational Intelligence for Financial Engineering and Economics.  
+Paddrik, M., Hayes, R., Todd, A., Yang, S., Scherer, W.  & Beling, P.  (2012).  An Agent-based Model of the E-Mini S&P 500 and the Flash Crash.  IEEE Computational Intelligence for Financial Engineering and Economics.
 
-Paddrik, M., Hayes, R., Scherer, W.  & Beling, P.  (2014).  Effects of Limit Order Book Information Level on Market Stability Metrics.  OFR Working Paper Series. 
+Paddrik, M., Hayes, R., Scherer, W.  & Beling, P.  (2014).  Effects of Limit Order Book Information Level on Market Stability Metrics.  OFR Working Paper Series.
 
 Copyright 2014 Mark Paddrik, Roy Hayes, Andrew Todd
 @#$#@#$#@
@@ -2209,7 +2220,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.4
+NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

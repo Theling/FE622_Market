@@ -1,8 +1,8 @@
 ;; Setup for Trader
 ;********************************************************************************************************************************************************************************
-to LD_Setup 
-  set typeOfTrader "LiquidityDemander"
-  set speed (random-poisson liquidity_Demander_Arrival_Rate) + 1 ; random speed parameter
+to IT_Setup 
+  set typeOfTrader "InstitutionalTrader"
+  set speed (random-poisson institutional_Trader_Arrival_Rate) + 1 ; random speed parameter
   set tradeSpeedAdjustment (random 30) + 1
   set tradeStatus "Transact"
   set orderNumber 0
@@ -21,20 +21,20 @@ end
 
 ;; Distribution of Order Quantity
 ;********************************************************************************************************************************************************************************
-to distOrderLiquidityDemander ; Use random quantity
+to distOrderInstitutionalTrader ; keep the random quantity
   let randDraw random 100
-  set tradeQuantity 1 * liquidityDemanderOrderSizeMultipler
-  if(randDraw > 31)[set tradeQuantity 2 * liquidityDemanderOrderSizeMultipler]
-  if(randDraw > 50)[set tradeQuantity 3 * liquidityDemanderOrderSizeMultipler]
-  if(randDraw > 63)[set tradeQuantity 4 * liquidityDemanderOrderSizeMultipler]
-  if(randDraw > 73)[set tradeQuantity 5 * liquidityDemanderOrderSizeMultipler]
-  if(randDraw > 82)[set tradeQuantity 6 * liquidityDemanderOrderSizeMultipler]
-  if(randDraw > 94)[set tradeQuantity 7 * liquidityDemanderOrderSizeMultipler]
+  set tradeQuantity 1 * institutionalTraderOrderSizeMultipler
+  if(randDraw > 31)[set tradeQuantity 2 * institutionalTraderOrderSizeMultipler]
+  if(randDraw > 50)[set tradeQuantity 3 * institutionalTraderOrderSizeMultipler]
+  if(randDraw > 63)[set tradeQuantity 4 * institutionalTraderOrderSizeMultipler]
+  if(randDraw > 73)[set tradeQuantity 5 * institutionalTraderOrderSizeMultipler]
+  if(randDraw > 82)[set tradeQuantity 6 * institutionalTraderOrderSizeMultipler]
+  if(randDraw > 94)[set tradeQuantity 7 * institutionalTraderOrderSizeMultipler]
 end
 
 ;Distribution of Price Selection
 ;********************************************************************************************************************************************************************************
-to distPriceLiquidityDemanderBuy ; 
+to distPriceInstitutionalTraderBuy
   let randDraw random 10000
   set tradePrice price - 10
   if(randDraw < 2800 and ticks > 5001)[set tradePrice price + 5]
@@ -49,7 +49,7 @@ to distPriceLiquidityDemanderBuy ;
   if(randDraw < 9600 and randDraw >= 9300)[set tradePrice price - 9 ]
 end
 
-to distPriceLiquidityDemanderSell
+to distPriceInstitutionalTraderSell
   let randDraw random 10000
   set tradePrice price + 10
   if(randDraw < 2800 and ticks > 5001)[set tradePrice price - 5 ]
@@ -66,7 +66,7 @@ end
 
 ;Strategy
 ;********************************************************************************************************************************************************************************
-to liquidityDemanderStrategy
+to institutionalTraderStrategy
   foreach openorders [
     ask ?[ 
       if(AuditTrail = true)[
@@ -77,16 +77,17 @@ to liquidityDemanderStrategy
   ]
   
   set openorders []
-  set ProbabilityBuyofLiqyuidityDemander  (50 - (price / 4 - privateViewPrice) * 10 )
+   
   let randDraw random 10000
-  ifelse randDraw < ((ProbabilityBuyofLiqyuidityDemander * 100) + 125) [
+  set ProbabilityBuyofInstitutionalTrader  (50 - (price / 4 - privateViewPrice) * 10 )
+  ifelse randDraw < ((ProbabilityBuyofInstitutionalTrader * 100) + 125) [
      set tradeStatus "Buy"
-     distPriceLiquidityDemanderBuy
-     distOrderLiquidityDemander
+     distPriceInstitutionalTraderBuy
+     distOrderInstitutionalTrader
   ][
      set tradeStatus "Sell"
-     distPriceLiquidityDemanderSell
-     distOrderLiquidityDemander
+     distPriceInstitutionalTraderSell
+     distOrderInstitutionalTrader
   ]
   
   hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
@@ -96,14 +97,14 @@ end
 ; Reporting
 ;*****************************************************************************************************************************
 
-to-report avgSharesLiquidityDemander
- ifelse((count turtles with [typeOfTrader = "LiquidityDemander"]) > 0)
- [report precision (((sum [sharesOwned] of traders with [typeOfTrader = "LiquidityDemander"])) / (count traders with [typeOfTrader = "LiquidityDemander"]))  2
+to-report avgSharesInstitutionalTrader
+ ifelse((count turtles with [typeOfTrader = "InstitutionalTrader"]) > 0)
+ [report precision (((sum [sharesOwned] of traders with [typeOfTrader = "InstitutionalTrader"])) / (count traders with [typeOfTrader = "InstitutionalTrader"]))  2
  ][report 0]
 end
 
-to-report accountValueLiquidityDemander
-  ifelse((count turtles with [typeOfTrader = "LiquidityDemander"]) > 0)
-  [report precision ((sum [tradeAccount] of traders with [typeOfTrader = "LiquidityDemander"]) / (count traders with [typeOfTrader = "LiquidityDemander"])) 2 
+to-report accountValueInstitutionalTrader
+  ifelse((count turtles with [typeOfTrader = "InstitutionalTrader"]) > 0)
+  [report precision ((sum [tradeAccount] of traders with [typeOfTrader = "InstitutionalTrader"]) / (count traders with [typeOfTrader = "InstitutionalTrader"])) 2 
   ][report 0]
 end
