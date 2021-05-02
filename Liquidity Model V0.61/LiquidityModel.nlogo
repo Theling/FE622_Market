@@ -1479,7 +1479,7 @@ ProbabilityBuyofLiqyuidityDemander
 ProbabilityBuyofLiqyuidityDemander
 0
 100
-48.75
+50
 1
 1
 NIL
