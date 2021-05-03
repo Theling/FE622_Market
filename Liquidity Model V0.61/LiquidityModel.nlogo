@@ -1,4 +1,4 @@
-__includes ["market_maker_agent.nls" "liquidity_demander_agent.nls" "coordinated_demander_agent.nls" "orders.nls" "writefileaudit.nls" "writefiledepth.nls" "writefileagent.nls" "liquidity_supplier_agent.nls" "forced_sale_agent.nls" "market_impact_agent.nls"]
+__includes ["market_maker_agent.nls" "liquidity_demander_agent.nls" "institutional_agent.nls" "coordinated_demander_agent.nls" "orders.nls" "writefileaudit.nls" "writefiledepth.nls" "writefileagent.nls" "liquidity_supplier_agent.nls" "forced_sale_agent.nls" "market_impact_agent.nls"]
 
 ;********************************************************************************************************************************************************************************
 ;Global Variables
@@ -1499,7 +1499,7 @@ ProbabilityBuyofLiqyuidityDemander
 ProbabilityBuyofLiqyuidityDemander
 0
 100
-50
+1
 1
 1
 NIL
@@ -1915,7 +1915,48 @@ SLIDER
 #_Coordinated_Demander
 0
 500
-500
+104
+1
+1
+NIL
+HORIZONTAL
+
+INPUTBOX
+1406
+845
+1561
+905
+privateViewPrice
+90
+1
+0
+Number
+
+SLIDER
+1446
+976
+1715
+1009
+ProbabilityBuyofInstitutionalTrader
+ProbabilityBuyofInstitutionalTrader
+0
+100
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1429
+1063
+1713
+1096
+institutionalTraderOrderSizeMultipler
+institutionalTraderOrderSizeMultipler
+0
+10
+10
 1
 1
 NIL

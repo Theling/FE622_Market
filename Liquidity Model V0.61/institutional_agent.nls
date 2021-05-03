@@ -2,7 +2,7 @@
 ;********************************************************************************************************************************************************************************
 to IT_Setup 
   set typeOfTrader "InstitutionalTrader"
-  set speed (random-poisson institutional_Trader_Arrival_Rate) + 1 ; random speed parameter
+  set speed (random-poisson liquidity_Demander_Arrival_Rate) + 1 ; random speed parameter
   set tradeSpeedAdjustment (random 30) + 1
   set tradeStatus "Transact"
   set orderNumber 0

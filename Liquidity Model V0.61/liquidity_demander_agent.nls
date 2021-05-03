@@ -77,10 +77,10 @@ to liquidityDemanderStrategy
   ]
   
   set openorders []
-  let tempProb (50 - (price / 4 - privateViewPrice) * 10 )
-  set ProbabilityBuyofLiqyuidityDemander tempProb
-  if(tempProb > 99) [set ProbabilityBuyofLiqyuidityDemander 99]
-  if(tempProb < 1) [set ProbabilityBuyofLiqyuidityDemander 1]
+  ;let tempProb (50 - (price / 4 - privateViewPrice) * 10 )
+  ;set ProbabilityBuyofLiqyuidityDemander tempProb
+  ;if(tempProb > 99) [set ProbabilityBuyofLiqyuidityDemander 99]
+  ;if(tempProb < 1) [set ProbabilityBuyofLiqyuidityDemander 1]
   ;set ProbabilityBuyofLiqyuidityDemander  (50 - (price / 4 - privateViewPrice) * 10 )
   let randDraw random 10000
   ifelse randDraw < ((ProbabilityBuyofLiqyuidityDemander * 100) + 125) [
