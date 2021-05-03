@@ -1,4 +1,4 @@
-__includes ["market_maker_agent.nls" "liquidity_demander_agent.nls" "orders.nls" "writefileaudit.nls" "writefiledepth.nls" "writefileagent.nls" "liquidity_supplier_agent.nls" "forced_sale_agent.nls" "market_impact_agent.nls"]
+__includes ["market_maker_agent.nls" "liquidity_demander_agent.nls" "coordinated_demander_agent.nls" "orders.nls" "writefileaudit.nls" "writefiledepth.nls" "writefileagent.nls" "liquidity_supplier_agent.nls" "forced_sale_agent.nls" "market_impact_agent.nls"]
 
 ;********************************************************************************************************************************************************************************
 ;Global Variables
@@ -61,7 +61,7 @@ Globals [price buyQueue sellQueue orderNumber tradeWipeQueue tradeMatch currentA
         currentBuyInterest currentSellInterest currentBuyInterestPrice currentSellInterestPrice maxBuyInterest
         priceVolatilityVar
 
-        BuyOrderQueue SellOrderQueue ; ???
+        BuyOrderQueue SellOrderQueue
         numberOrderBid numberOrderAsk
         currentOrderAsk currentOrderBid
         MatchID
@@ -109,11 +109,11 @@ turtles-own [ movingAverageDIS totalCanceled reversion typeOfTrader traderNumber
               checkTraderNumber buysell modify
               ]
 
-breed [orders an-order] ; orders is the name of the order set, an-order is the name of a single member.
+breed [orders an-order]
 
 orders-own [ OrderPrice OrderB/A OrderID OrderTraderID OrderQuantity PriceOrder TraderWho TraderWhoType HON1 HON2]
 
-breed [traders a-trader]; again traders is one breed
+breed [traders a-trader]
 
 traders-own [openOrders PriceOrder OrderPositionDesired ]
 
@@ -170,9 +170,10 @@ end
 
 to setup-economy  ;; turtles procedure for setup
   set traderListNumbers [0]
-  create-traders #_Liquidity_Demander [LD_Setup]  ; create-<breed> syntax, #_Liquidity_Demander is from the interface.
+  create-traders #_Liquidity_Demander [LD_Setup]
   create-traders #_Market_Makers [MM_Setup]
   create-traders #_Liquidity_Supplier[LS_Setup]
+  create-traders #_Coordinated_Demander[CD_Setup]
   create-traders 1[FS_Setup]
   create-traders 1[MI_Setup]
 
@@ -225,6 +226,16 @@ to go
       ]
     ]
 
+    if (typeOfTrader = "CoordinatedDemander") [
+      if countticks >= (liquidityDemanderTradeLength + tradeSpeedAdjustment) [
+        set tradeStatus "Transact"
+
+        if(ticks > 5000) [set totalCanceled (totalCanceled + tradeQuantity)]
+
+        set speed int(random-poisson liquidity_Demander_Arrival_Rate) + 1
+      ]
+    ]
+
     if (typeOfTrader = "MarketMakers") [
         if countticks >= (marketMakerTradeLength + tradeSpeedAdjustment)[
           set tradeStatus "Transact"
@@ -259,12 +270,12 @@ to go
 
     set tradeAccount ((sharesOwned * ( price / 4) - averageBoughtPrice * totalBought + averageSoldPrice * totalSold) - (transactionCost * (totalBought + totalSold)))
 
-    if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" ) and tradeStatus = "Buy" and tradeQuantity > 0)[
+    if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "CoordinatedDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" ) and tradeStatus = "Buy" and tradeQuantity > 0)[
       set currentBuyInterestPrice ((currentBuyInterestPrice * currentBuyInterest + tradeQuantity * tradePrice) / (currentBuyInterest + tradeQuantity))
       set currentBuyInterest (currentBuyInterest + tradeQuantity)
     ]
 
-    if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" ) and tradeStatus = "Sell" and tradeQuantity > 0)[
+    if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "CoordinatedDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" ) and tradeStatus = "Sell" and tradeQuantity > 0)[
       set currentSellInterestPrice ((currentSellInterestPrice * currentSellInterest + tradeQuantity * tradePrice) / (currentSellInterest + tradeQuantity))
       set currentSellInterest (currentSellInterest + tradeQuantity)
     ]
@@ -277,6 +288,12 @@ to go
         if typeOfTrader = "LiquidityDemander"
         [
           liquidityDemanderStrategy
+        ]
+
+
+        if typeOfTrader = "CoordinatedDemander"
+        [
+          CoordinatedDemanderStrategy
         ]
 
         if typeOfTrader = "MarketMakers"
@@ -355,6 +372,7 @@ to go
     writetofileagent
   ]
 
+  if(ticks > 15000)[stop]
   tick
 end
 
@@ -751,6 +769,8 @@ to do-plots
     plot avgSharesMarketMakers
     set-current-plot-pen "Demander"
     plot avgSharesLiquidityDemander
+    set-current-plot-pen "Coordinator"
+    plot avgSharesCoordinatedDemander
     set-current-plot-pen "Supplier"
     plot avgSharesLiquiditySupplier
     set-current-plot-pen "Forced"
@@ -771,6 +791,8 @@ to do-plots
     plot accountValueMarketMakers
     set-current-plot-pen "Demander"
     plot accountValueLiquidityDemander
+    set-current-plot-pen "Coordinator"
+    plot accountValueCoordinatedDemander
     set-current-plot-pen "Supplier"
     plot accountValueLiquiditySupplier
   ]
@@ -842,7 +864,6 @@ end
 to-report frequency [val thelist]
   report length filter [? = val] thelist
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 534
@@ -945,7 +966,7 @@ SLIDER
 #_Liquidity_Demander
 0
 250
-250
+200
 1
 1
 NIL
@@ -960,7 +981,7 @@ SLIDER
 #_Market_Makers
 0
 8
-8
+5
 1
 1
 NIL
@@ -1478,7 +1499,7 @@ ProbabilityBuyofLiqyuidityDemander
 ProbabilityBuyofLiqyuidityDemander
 0
 100
-47.5
+50
 1
 1
 NIL
@@ -1523,7 +1544,7 @@ market_Makers_Arrival_Rate
 market_Makers_Arrival_Rate
 0
 120
-0
+10
 5
 1
 NIL
@@ -1560,6 +1581,7 @@ PENS
 "Demander" 1.0 0 -2674135 true "" ""
 "Supplier" 1.0 0 -13840069 true "" ""
 "Forced" 1.0 0 -8630108 true "" ""
+"Coordinator" 1.0 0 -13791810 true "" ""
 
 TEXTBOX
 574
@@ -1590,6 +1612,7 @@ PENS
 "MM" 1.0 0 -16777216 true "" ""
 "Demander" 1.0 0 -2674135 true "" ""
 "Supplier" 1.0 0 -13840069 true "" ""
+"Coordinator" 1.0 0 -13791810 true "" ""
 
 SLIDER
 1474
@@ -1651,7 +1674,7 @@ TEXTBOX
 204
 1100
 224
-Forced Sell Trader
+Forced Buy Trader
 16
 0.0
 1
@@ -1662,7 +1685,7 @@ INPUTBOX
 867
 306
 QuntitySale
-0
+100
 1
 0
 Number
@@ -1684,7 +1707,7 @@ INPUTBOX
 1137
 306
 PeriodtoEndExecution
-9440
+9000
 1
 0
 Number
@@ -1741,7 +1764,7 @@ TEXTBOX
 226
 1299
 271
-Quantity to Sell      Tick Start Selling             Tick End Selling       Number of Period to Sell
+Quantity to Buy     Tick Start Buying             Tick End Buying       Number of Period to Buy
 12
 0.0
 1
@@ -1818,7 +1841,7 @@ SWITCH
 177
 DepthFile
 DepthFile
-0
+1
 1
 -1000
 
@@ -1883,16 +1906,20 @@ false
 PENS
 "pen-0" 1.0 0 -7500403 true "" ""
 
-INPUTBOX
-1586
-221
-1741
-281
-privateViewPrice
-90
-1
+SLIDER
+1402
+777
+1618
+810
+#_Coordinated_Demander
+#_Coordinated_Demander
 0
-Number
+500
+500
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## ## WHAT IS IT?
