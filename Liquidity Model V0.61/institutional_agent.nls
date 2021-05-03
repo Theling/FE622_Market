@@ -79,7 +79,10 @@ to institutionalTraderStrategy
   set openorders []
    
   let randDraw random 10000
-  set ProbabilityBuyofInstitutionalTrader  (50 - (price / 4 - privateViewPrice) * 10 )
+  let tempProb (50 - (price / 4 - privateViewPrice) * 10 )
+  set ProbabilityBuyofInstitutionalTrader tempProb
+  if(tempProb > 99) [set ProbabilityBuyofInstitutionalTrader 99]
+  if(tempProb < 1) [set ProbabilityBuyofInstitutionalTrader 1]
   ifelse randDraw < ((ProbabilityBuyofInstitutionalTrader * 100) + 125) [
      set tradeStatus "Buy"
      distPriceInstitutionalTraderBuy
