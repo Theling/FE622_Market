@@ -1,0 +1,97 @@
+;; Setup for Trader
+;********************************************************************************************************************************************************************************
+to CD_Setup 
+  set typeOfTrader "CoordinatedDemander"
+  set speed (random-poisson liquidity_Demander_Arrival_Rate) + 1
+  set tradeSpeedAdjustment (random 30) + 1
+  set tradeStatus "Transact"
+  set orderNumber 0
+  set countticks 0
+  set tradeAccount 0
+  set sharesOwned 0
+  set totalBought 0
+  set totalSold 0
+  set averageBoughtPrice 0
+  set averageSoldPrice 0
+  set totalCanceled 0
+  set buysell "B"
+  set modify 0
+  set openOrders []
+end
+
+
+;Strategy
+;********************************************************************************************************************************************************************************
+to CoordinatedDemanderStrategy
+  foreach openorders [
+    ask ?[ 
+      if(AuditTrail = true)[
+        writetofile OrderID "Cancel" OrderPrice OrderQuantity TraderWhoType tradernumber 1 "-" HON1 HON2
+      ]
+      die
+    ]
+  ]
+  
+  set openorders []
+
+
+  ;; if they have more than 50% of their peers deciding to buy, they will likely buy as well.
+  let randDraw random 10000
+  let numBuyer (count traders with [typeOfTrader = "CoordinatedDemander" and tradeStatus = "Buy"])
+  let totoalNumTrader (count traders with [typeOfTrader = "CoordinatedDemander"])
+
+  ifelse (numBuyer / totoalNumTrader > 0.6)[
+        ifelse randDraw < (((ProbabilityBuyofLiqyuidityDemander + 20) * 100) + 125) [
+             set tradeStatus "Buy"
+             distPriceLiquidityDemanderBuy
+             distOrderLiquidityDemander
+          ][
+             set tradeStatus "Sell"
+             distPriceLiquidityDemanderSell
+             distOrderLiquidityDemander
+             ]
+]
+[ 
+     ifelse (numBuyer / totoalNumTrader < 0.4)[
+        ifelse randDraw < (((ProbabilityBuyofLiqyuidityDemander - 20) * 100) + 125) [
+             set tradeStatus "Buy"
+             distPriceLiquidityDemanderBuy
+             distOrderLiquidityDemander
+          ][
+             set tradeStatus "Sell"
+             distPriceLiquidityDemanderSell
+             distOrderLiquidityDemander
+             ]
+     ]
+          
+        [
+        ifelse randDraw < ((ProbabilityBuyofLiqyuidityDemander * 100) + 125) [
+             set tradeStatus "Buy"
+             distPriceLiquidityDemanderBuy
+             distOrderLiquidityDemander
+          ][
+             set tradeStatus "Sell"
+             distPriceLiquidityDemanderSell
+             distOrderLiquidityDemander
+          ]
+     ]
+]
+  
+  hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+end
+
+;*****************************************************************************************************************************
+; Reporting
+;*****************************************************************************************************************************
+
+to-report avgSharesCoordinatedDemander
+ ifelse((count turtles with [typeOfTrader = "CoordinatedDemander"]) > 0)
+ [report precision (((sum [sharesOwned] of traders with [typeOfTrader = "CoordinatedDemander"])) / (count traders with [typeOfTrader = "CoordinatedDemander"]))  2
+ ][report 0]
+end
+
+to-report accountValueCoordinatedDemander
+  ifelse((count turtles with [typeOfTrader = "CoordinatedDemander"]) > 0)
+  [report precision ((sum [tradeAccount] of traders with [typeOfTrader = "CoordinatedDemander"]) / (count traders with [typeOfTrader = "CoordinatedDemander"])) 2 
+  ][report 0]
+end
