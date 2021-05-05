@@ -106,7 +106,7 @@ turtles-own [ movingAverageDIS totalCanceled reversion typeOfTrader traderNumber
               tradeStatus tradeQuantity tradeOrderNumber speed tradeSpeedAdjustment tradePrice
               tradeOrderForm countticks sharesOwned tradeAccount totalBought totalSold
               averageBoughtPrice averageSoldPrice
-              checkTraderNumber buysell modify
+              checkTraderNumber buysell modify stopTradingFlag
               ]
 
 breed [orders an-order]
@@ -174,6 +174,7 @@ to setup-economy  ;; turtles procedure for setup
   create-traders #_Market_Makers [MM_Setup]
   create-traders #_Liquidity_Supplier[LS_Setup]
   create-traders #_Coordinated_Demander[CD_Setup]
+  create-traders 10 [IT_Setup]
   create-traders 1[FS_Setup]
   create-traders 1[MI_Setup]
 
@@ -268,14 +269,24 @@ to go
       ]
     ]
 
+    if (typeOfTrader = "InstitutionalTrader") [
+      if countticks >= (liquidityDemanderTradeLength + tradeSpeedAdjustment) [
+        set tradeStatus "Transact"
+
+        if(ticks > 5000) [set totalCanceled (totalCanceled + tradeQuantity)]
+
+        set speed int(random-poisson liquidity_Demander_Arrival_Rate) + 1
+      ]
+    ]
+
     set tradeAccount ((sharesOwned * ( price / 4) - averageBoughtPrice * totalBought + averageSoldPrice * totalSold) - (transactionCost * (totalBought + totalSold)))
 
-    if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "CoordinatedDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" ) and tradeStatus = "Buy" and tradeQuantity > 0)[
+    if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "CoordinatedDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" or typeOfTrader = "InstitutionalTrader") and tradeStatus = "Buy" and tradeQuantity > 0)[
       set currentBuyInterestPrice ((currentBuyInterestPrice * currentBuyInterest + tradeQuantity * tradePrice) / (currentBuyInterest + tradeQuantity))
       set currentBuyInterest (currentBuyInterest + tradeQuantity)
     ]
 
-    if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "CoordinatedDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" ) and tradeStatus = "Sell" and tradeQuantity > 0)[
+    if((typeOfTrader = "LiquidityDemander" or typeOfTrader = "CoordinatedDemander" or typeOfTrader = "LiquiditySupplier" or typeOfTrader = "MarketMakers" or typeOfTrader = "InstitutionalTrader") and tradeStatus = "Sell" and tradeQuantity > 0)[
       set currentSellInterestPrice ((currentSellInterestPrice * currentSellInterest + tradeQuantity * tradePrice) / (currentSellInterest + tradeQuantity))
       set currentSellInterest (currentSellInterest + tradeQuantity)
     ]
@@ -294,6 +305,11 @@ to go
         if typeOfTrader = "CoordinatedDemander"
         [
           CoordinatedDemanderStrategy
+        ]
+
+        if typeOfTrader = "InstitutionalTrader"
+        [
+          institutionalTraderStrategy
         ]
 
         if typeOfTrader = "MarketMakers"
@@ -519,7 +535,7 @@ end
 ;Calculate Price Returns
 ;********************************************************************************************************************************************************************************
 
-to calculatePriceReturns
+to calculatePriceReturns ; 30 ticks returns is appended to list priceReturns
   set priceReturns lput (ln((item (length movingAverage - 1) movingAverage) / (item (length movingAverage - 30) movingAverage)))  priceReturns
 end
 
@@ -775,6 +791,8 @@ to do-plots
     plot avgSharesLiquiditySupplier
     set-current-plot-pen "Forced"
     plot avgSharesForcedSale
+    set-current-plot-pen "Institutions"
+    plot avgSharesInstitutionalTrader
   ]
 
   if(ticks >= 6000)[
@@ -795,6 +813,8 @@ to do-plots
     plot accountValueCoordinatedDemander
     set-current-plot-pen "Supplier"
     plot accountValueLiquiditySupplier
+    set-current-plot-pen "Institutions"
+    plot accountValueInstitutionalTrader
   ]
 
 end
@@ -966,7 +986,7 @@ SLIDER
 #_Liquidity_Demander
 0
 250
-200
+49
 1
 1
 NIL
@@ -1499,7 +1519,7 @@ ProbabilityBuyofLiqyuidityDemander
 ProbabilityBuyofLiqyuidityDemander
 0
 100
-1
+50
 1
 1
 NIL
@@ -1582,6 +1602,7 @@ PENS
 "Supplier" 1.0 0 -13840069 true "" ""
 "Forced" 1.0 0 -8630108 true "" ""
 "Coordinator" 1.0 0 -13791810 true "" ""
+"Institutions" 1.0 0 -7500403 true "" ""
 
 TEXTBOX
 574
@@ -1613,6 +1634,7 @@ PENS
 "Demander" 1.0 0 -2674135 true "" ""
 "Supplier" 1.0 0 -13840069 true "" ""
 "Coordinator" 1.0 0 -13791810 true "" ""
+"Institutions" 1.0 0 -7500403 true "" ""
 
 SLIDER
 1474
@@ -1696,7 +1718,7 @@ INPUTBOX
 1003
 306
 PeriodtoStartExecution
-8000
+6000
 1
 0
 Number
@@ -1707,7 +1729,7 @@ INPUTBOX
 1137
 306
 PeriodtoEndExecution
-9000
+7000
 1
 0
 Number
@@ -1818,7 +1840,7 @@ MarketMakerInventoryLimit
 MarketMakerInventoryLimit
 5
 100
-50
+100
 5
 1
 NIL
@@ -1841,7 +1863,7 @@ SWITCH
 177
 DepthFile
 DepthFile
-1
+0
 1
 -1000
 
@@ -1852,7 +1874,7 @@ SWITCH
 211
 AgentFile
 AgentFile
-1
+0
 1
 -1000
 
@@ -1907,36 +1929,36 @@ PENS
 "pen-0" 1.0 0 -7500403 true "" ""
 
 SLIDER
-1402
-777
-1618
-810
+1592
+206
+1808
+239
 #_Coordinated_Demander
 #_Coordinated_Demander
 0
 500
-104
+83
 1
 1
 NIL
 HORIZONTAL
 
 INPUTBOX
-1406
-845
-1561
-905
+1331
+720
+1486
+780
 privateViewPrice
-90
+100
 1
 0
 Number
 
 SLIDER
-1446
-976
-1715
-1009
+1336
+792
+1605
+825
 ProbabilityBuyofInstitutionalTrader
 ProbabilityBuyofInstitutionalTrader
 0
@@ -1948,10 +1970,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1429
-1063
-1713
-1096
+1335
+839
+1619
+872
 institutionalTraderOrderSizeMultipler
 institutionalTraderOrderSizeMultipler
 0
@@ -1961,6 +1983,50 @@ institutionalTraderOrderSizeMultipler
 1
 NIL
 HORIZONTAL
+
+INPUTBOX
+1594
+249
+1689
+309
+buyThreshold
+1.1
+1
+0
+Number
+
+INPUTBOX
+1711
+248
+1810
+308
+priceRatioAdjust
+0.1
+1
+0
+Number
+
+SWITCH
+1296
+256
+1403
+289
+AllowCoordinateBuy
+AllowCoordinateBuy
+0
+1
+-1000
+
+INPUTBOX
+1521
+724
+1676
+784
+tradablePriceRangeMultiplier
+1.01
+1
+0
+Number
 
 @#$#@#$#@
 ## ## WHAT IS IT?

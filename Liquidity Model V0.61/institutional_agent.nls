@@ -17,13 +17,16 @@ to IT_Setup
   set buysell "B"
   set modify 0
   set openOrders []
+  let accountRecord []
+  set stopTradingFlag false
+
 end
 
 ;; Distribution of Order Quantity
 ;********************************************************************************************************************************************************************************
 to distOrderInstitutionalTrader ; keep the random quantity
   let randDraw random 100
-  set tradeQuantity 1 * institutionalTraderOrderSizeMultipler
+  set tradeQuantity 5;1 * institutionalTraderOrderSizeMultipler
   if(randDraw > 31)[set tradeQuantity 2 * institutionalTraderOrderSizeMultipler]
   if(randDraw > 50)[set tradeQuantity 3 * institutionalTraderOrderSizeMultipler]
   if(randDraw > 63)[set tradeQuantity 4 * institutionalTraderOrderSizeMultipler]
@@ -67,6 +70,7 @@ end
 ;Strategy
 ;********************************************************************************************************************************************************************************
 to institutionalTraderStrategy
+
   foreach openorders [
     ask ?[ 
       if(AuditTrail = true)[
@@ -75,25 +79,53 @@ to institutionalTraderStrategy
       die
     ]
   ]
-  
   set openorders []
-   
-  let randDraw random 10000
-  let tempProb (50 - (price / 4 - privateViewPrice) * 10 )
-  set ProbabilityBuyofInstitutionalTrader tempProb
-  if(tempProb > 99) [set ProbabilityBuyofInstitutionalTrader 99]
-  if(tempProb < 1) [set ProbabilityBuyofInstitutionalTrader 1]
-  ifelse randDraw < ((ProbabilityBuyofInstitutionalTrader * 100) + 125) [
-     set tradeStatus "Buy"
-     distPriceInstitutionalTraderBuy
-     distOrderInstitutionalTrader
-  ][
-     set tradeStatus "Sell"
-     distPriceInstitutionalTraderSell
-     distOrderInstitutionalTrader
-  ]
+   if ((price / 4) > privateViewPrice * tradablePriceRangeMultiplier or price < privateViewPrice * (1 / tradablePriceRangeMultiplier))[
+     set stopTradingFlag true
+     ifelse (sharesOwned < 0)[
+       set tradeStatus  "Buy"
+       set tradeQuantity  ( 0 - sharesOwned)
+       set tradePrice price + 5
+       ][
+       set tradeStatus  "Sell"
+       set tradeQuantity   sharesOwned
+       set tradePrice price - 5
+       ]
+     hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+     ]
+
+  ifelse (stopTradingFlag = false) [
+    let randDraw random 10000
+    let tempProb (50 - (price / 4 - privateViewPrice) * 10 )
+    set ProbabilityBuyofInstitutionalTrader tempProb
+    if(tempProb > 99) [set ProbabilityBuyofInstitutionalTrader 99]
+    if(tempProb < 1) [set ProbabilityBuyofInstitutionalTrader 1]
+    ifelse randDraw < ((ProbabilityBuyofInstitutionalTrader * 100) + 125) [
+        set tradeStatus "Buy"
+        distPriceInstitutionalTraderBuy
+        distOrderInstitutionalTrader
+    ][
+        set tradeStatus "Sell"
+        distPriceInstitutionalTraderSell
+        distOrderInstitutionalTrader
+    ]
   
-  hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+    hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+  ][
+       ifelse (sharesOwned < 0)[
+       set tradeStatus  "Buy"
+       set tradeQuantity  ( 0 - sharesOwned)
+       set tradePrice price + 5
+       ][
+       set tradeStatus  "Sell"
+       set tradeQuantity   sharesOwned
+       set tradePrice price - 5
+       ]
+     ;hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+      if (price < privateViewPrice * tradablePriceRangeMultiplier and price > privateViewPrice * (1 / tradablePriceRangeMultiplier))[set stopTradingFlag false]
+  ]
+
+
 end
 
 ;*****************************************************************************************************************************

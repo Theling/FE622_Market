@@ -33,8 +33,8 @@ to forcedSaleStrategy
   
   set openorders []
    
-     set tradeStatus "Sell"
-     set tradePrice price - 5
+     set tradeStatus "Buy"
+     set tradePrice price + 5
      set tradeQuantity round ( (QuntitySale + sharesOwned) / ((PeriodtoEndExecution - ticks) / 6)) 
   
   hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
@@ -55,3 +55,6 @@ to-report accountValueForcedSale
   [report precision ((sum [tradeAccount] of traders with [typeOfTrader = "ForcedSale"]) / (count traders with [typeOfTrader = "ForcedSale"])) 2 
   ][report 0]
 end
+
+;********************* clear buy orders ***************
+
