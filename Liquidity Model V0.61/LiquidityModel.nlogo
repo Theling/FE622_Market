@@ -348,11 +348,16 @@ to go
 
       let transactionVar 0
 
+      if (ticks >= 6000)[
+        cancelOrders "Buy" "ForcedSale"
+      ]
       if (ticks > 5000 ) [
         transactionOrder
       ]
     ]
   ]
+
+
 
   if ( count orders with [OrderB/A = "Buy"] > 0 )
   [
@@ -1963,7 +1968,7 @@ ProbabilityBuyofInstitutionalTrader
 ProbabilityBuyofInstitutionalTrader
 0
 100
-50
+40
 1
 1
 NIL

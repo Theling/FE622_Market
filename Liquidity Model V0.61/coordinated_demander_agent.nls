@@ -105,3 +105,4 @@ to-report accountValueCoordinatedDemander
   [report precision ((sum [tradeAccount] of traders with [typeOfTrader = "CoordinatedDemander"]) / (count traders with [typeOfTrader = "CoordinatedDemander"])) 2 
   ][report 0]
 end
+

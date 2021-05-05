@@ -35,3 +35,13 @@ to Order_Setup [a b d f tdr tdrtype]
   ]
 end
 
+to cancelOrders [b tdrtype]
+  ask traders with [typeOfTrader = tdrtype] [
+    let tempopenorders []
+    foreach openorders [
+      ask ? [ifelse (OrderB/A != b) [set tempopenorders lput ? tempopenorders][die]]
+    ]
+    set openorders tempopenorders
+    ]
+  
+end
