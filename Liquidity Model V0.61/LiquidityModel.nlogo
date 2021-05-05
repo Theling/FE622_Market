@@ -426,12 +426,16 @@ to transactionOrder
     let orderHON1Ask 0
     let orderHON2Ask 0
 
+    let orderTraderAskType 0
+    let orderTraderBidType 0
+
     ask firstInBuyQueue [
       set currentOrderBid OrderPrice
       set quantityDiff OrderQuantity
       set orderQunatityBid OrderQuantity
       set orderBidID OrderID
       set traderBid TraderWho
+      set orderTraderBidType TraderWhoType
       set orderHON1Bid HON1
       set orderHON2Bid HON2
     ]
@@ -442,6 +446,7 @@ to transactionOrder
       set orderQunatityAsk OrderQuantity
       set orderAskID OrderID
       set traderAsk TraderWho
+      set orderTraderAskType TraderWhoType
       set orderHON1Ask HON1
       set orderHON2Ask HON2
     ]
@@ -467,8 +472,9 @@ to transactionOrder
           writetofile orderBidID "Bought" price orderQunatityBid traderBidType traderBidNum 1 MatchID orderHON1Bid orderHON2Bid
           writetofile orderAskID "Sold" price orderQunatityAsk traderAskType traderAskNum 2 MatchID orderHON1Ask orderHON2Ask
         ]
-
+        print (list "check1" totalBought  orderQunatityBid)
         ask traderBid [ set sharesOwned (sharesOwned + orderQunatityBid) set averageBoughtPrice ((averageBoughtPrice * totalBought + (price / 4) * orderQunatityBid) / (totalBought + orderQunatityBid)) set totalBought (totalBought + orderQunatityBid) ]
+        print (list "check2" totalSold  orderQunatityAsk)
         ask traderAsk [ set sharesOwned (sharesOwned - orderQunatityAsk) set averageSoldPrice ((averageSoldPrice * totalSold + (price / 4) * orderQunatityAsk) / (totalSold + orderQunatityAsk)) set totalSold (totalSold + orderQunatityAsk)]
         set volume (volume + orderQunatityAsk)
 
@@ -496,9 +502,11 @@ to transactionOrder
         ]
 
         ask traderBid [ set sharesOwned (sharesOwned + orderQunatityAsk)
+        print (list "check3" totalBought  orderQunatityAsk orderTraderAskType)
           set averageBoughtPrice ((averageBoughtPrice * totalBought + (price / 4) * orderQunatityAsk) / (totalBought + orderQunatityAsk)) set totalBought (totalBought + orderQunatityAsk)]
 
         ask traderAsk [ set sharesOwned (sharesOwned - orderQunatityAsk)
+        print (list "check4" totalSold  orderQunatityAsk)
           set averageSoldPrice ((averageSoldPrice * totalSold + (price / 4) * orderQunatityAsk) / (totalSold + orderQunatityAsk)) set totalSold (totalSold + orderQunatityAsk)  ]
         set volume (volume + orderQunatityAsk)
 
@@ -525,8 +533,10 @@ to transactionOrder
           writetofile orderBidID "Bought" price orderQunatityBid traderBidType traderBidNum 1 MatchID orderHON1Bid orderHON2Bid
           writetofile orderAskID "Sold" price orderQunatityBid traderAskType traderAskNum 2 MatchID orderHON1Ask orderHON2Ask
         ]
-
+        if ( (totalBought + orderQunatityBid) = 0 ) [print (list "check5" totalBought  orderQunatityBid)]
         ask traderBid [ set sharesOwned (sharesOwned + orderQunatityBid) set averageBoughtPrice ((averageBoughtPrice * totalBought + (price / 4) * orderQunatityBid) / (totalBought + orderQunatityBid)) set totalBought (totalBought + orderQunatityBid)]
+        if ( (totalBought + orderQunatityBid) = 0 ) [print (list "check52" (averageBoughtPrice * totalBought + (price / 4) * orderQunatityBid) averageBoughtPrice)]
+        if ( (totalSold + orderQunatityBid) = 0 ) [print (list "check6" totalSold  orderQunatityBid)]
         ask traderAsk [ set sharesOwned (sharesOwned - orderQunatityBid) set averageSoldPrice ((averageSoldPrice * totalSold + (price / 4) * orderQunatityBid) / (totalSold + orderQunatityBid)) set totalSold (totalSold + orderQunatityBid)]
         set volume (volume + orderQunatityBid)
 
@@ -791,11 +801,11 @@ to do-plots
     set-current-plot-pen "Demander"
     plot avgSharesLiquidityDemander
     set-current-plot-pen "Coordinator"
-    plot avgSharesCoordinatedDemander
+    plot avgSharesCoordinatedDemander * 10
     set-current-plot-pen "Supplier"
     plot avgSharesLiquiditySupplier
     set-current-plot-pen "Forced"
-    plot avgSharesForcedSale
+    plot avgSharesForcedSale / 100
     set-current-plot-pen "Institutions"
     plot avgSharesInstitutionalTrader
   ]
@@ -805,7 +815,7 @@ to do-plots
     set-current-plot-pen "pen-0"
     let lPR length priceReturns
     ;plot (((sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) / 0.02)*((2.08 / 10000)*((100 * (sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) * (140 * currentMAV + 1)) / (0.02 * 40 * 1000000))^(-1 / 3) + (12.08 / 10000)*( 4 /(0.01 * (140 * currentMAV + 1)))^(0.5)))
-    print (((sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) / 0.02)*((2.08 / 10000)*((100 * (sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) * (140 * currentMAV + 1)) / (0.02 * 40 * 1000000))^(-1 / 3) + (12.08 / 10000)*( 4 /(0.01 * (140 * currentMAV + 1)))^(0.5)))
+    ;print (((sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) / 0.02)*((2.08 / 10000)*((100 * (sqrt(abs (item (lPR - 1) priceReturns)) * 15.87) * (140 * currentMAV + 1)) / (0.02 * 40 * 1000000))^(-1 / 3) + (12.08 / 10000)*( 4 /(0.01 * (140 * currentMAV + 1)))^(0.5)))
   ]
 
   if(ticks >= 5000)[
@@ -991,7 +1001,7 @@ SLIDER
 #_Liquidity_Demander
 0
 250
-49
+51
 1
 1
 NIL
@@ -1294,7 +1304,7 @@ marketMakerTradeLength
 marketMakerTradeLength
 0
 60
-30
+10
 10
 1
 NIL
@@ -1484,7 +1494,7 @@ SLIDER
 #_Liquidity_Supplier
 0
 50
-20
+25
 1
 1
 NIL
@@ -1499,7 +1509,7 @@ liquiditySupplierTradeLength
 liquiditySupplierTradeLength
 0
 1440
-720
+240
 60
 1
 NIL
@@ -1539,7 +1549,7 @@ liquidity_Supplier_Arrival_Rate
 liquidity_Supplier_Arrival_Rate
 0
 1440
-1440
+1380
 60
 1
 NIL
@@ -1665,7 +1675,7 @@ liquidityDemanderOrderSizeMultipler
 liquidityDemanderOrderSizeMultipler
 1
 10
-1
+5
 1
 1
 NIL
@@ -1680,7 +1690,7 @@ marketMakerOrderSizeMultipler
 marketMakerOrderSizeMultipler
 1
 5
-1
+5
 1
 1
 NIL
@@ -1712,7 +1722,7 @@ INPUTBOX
 867
 306
 QuntitySale
-100
+30
 1
 0
 Number
@@ -1723,7 +1733,7 @@ INPUTBOX
 1003
 306
 PeriodtoStartExecution
-6000
+5500
 1
 0
 Number
@@ -1734,7 +1744,7 @@ INPUTBOX
 1137
 306
 PeriodtoEndExecution
-7000
+6000
 1
 0
 Number
@@ -1844,8 +1854,8 @@ SLIDER
 MarketMakerInventoryLimit
 MarketMakerInventoryLimit
 5
-100
-100
+1000
+1000
 5
 1
 NIL
@@ -1942,7 +1952,7 @@ SLIDER
 #_Coordinated_Demander
 0
 500
-83
+201
 1
 1
 NIL
@@ -1968,7 +1978,7 @@ ProbabilityBuyofInstitutionalTrader
 ProbabilityBuyofInstitutionalTrader
 0
 100
-40
+17.5
 1
 1
 NIL
@@ -1995,7 +2005,7 @@ INPUTBOX
 1689
 309
 buyThreshold
-1.1
+1.02
 1
 0
 Number
@@ -2006,7 +2016,7 @@ INPUTBOX
 1810
 308
 priceRatioAdjust
-0.1
+0.5
 1
 0
 Number
@@ -2028,7 +2038,7 @@ INPUTBOX
 1676
 784
 tradablePriceRangeMultiplier
-1.01
+2
 1
 0
 Number

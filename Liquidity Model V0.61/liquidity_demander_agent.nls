@@ -93,7 +93,7 @@ to liquidityDemanderStrategy
      distOrderLiquidityDemander
   ]
   
-  hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+  hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity + 1 myself typeOfTrader]
 end
 
 ;*****************************************************************************************************************************

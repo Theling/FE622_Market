@@ -19,7 +19,16 @@ to CD_Setup
   set openOrders []
 end
 
-
+to distOrderCoordinatedDemander [factor] ; Use random quantity
+  let randDraw random 100
+  set tradeQuantity 1 * liquidityDemanderOrderSizeMultipler
+  if(randDraw > 31)[set tradeQuantity 2 * liquidityDemanderOrderSizeMultipler * factor]
+  if(randDraw > 50)[set tradeQuantity 3 * liquidityDemanderOrderSizeMultipler * factor]
+  if(randDraw > 63)[set tradeQuantity 4 * liquidityDemanderOrderSizeMultipler * factor]
+  if(randDraw > 73)[set tradeQuantity 5 * liquidityDemanderOrderSizeMultipler * factor]
+  if(randDraw > 82)[set tradeQuantity 6 * liquidityDemanderOrderSizeMultipler * factor]
+  if(randDraw > 94)[set tradeQuantity 7 * liquidityDemanderOrderSizeMultipler * factor]
+end
 ;Strategy
 ;********************************************************************************************************************************************************************************
 to CoordinatedDemanderStrategy
@@ -42,44 +51,51 @@ to CoordinatedDemanderStrategy
   let priceRatio  (price / 4) / currentMA
   ifelse (allowCoordinateBuy = True)[
     ifelse (priceRatio > buyThreshold)[
-        ifelse randDraw < ((ProbabilityBuyofLiqyuidityDemander * (priceRatio + priceRatioAdjust) * 100) + 125) [
+      print "priceRatio > buyThreshold"
+      print priceRatio
+        ifelse randDraw < ((50 * (priceRatio + priceRatioAdjust) * 100) + 125) [
              set tradeStatus "Buy"
              distPriceLiquidityDemanderBuy
-             distOrderLiquidityDemander
+             distOrderCoordinatedDemander 10
           ][
              set tradeStatus "Sell"
              distPriceLiquidityDemanderSell
-             distOrderLiquidityDemander
+             distOrderCoordinatedDemander 5
              ]
     ]
     [ 
      ifelse (priceRatio < (1 / buyThreshold))[
-        ifelse randDraw < ((ProbabilityBuyofLiqyuidityDemander * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
+      print "priceRatio < buyThreshold"
+      print priceRatio
+        ifelse randDraw < ((50 * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
              set tradeStatus "Buy"
              distPriceLiquidityDemanderBuy
-             distOrderLiquidityDemander
+             distOrderCoordinatedDemander 5
           ][
              set tradeStatus "Sell"
              distPriceLiquidityDemanderSell
-             distOrderLiquidityDemander
+             distOrderCoordinatedDemander 10
              ]
       ]
           
       [
-        ifelse randDraw < ((50 * 100) + 25) [
+        ifelse randDraw < ((50 * 100)) [
+          print priceRatio
              set tradeStatus "Buy"
              distPriceLiquidityDemanderBuy
-             distOrderLiquidityDemander
+             distOrderCoordinatedDemander 1
           ][
              set tradeStatus "Sell"
              distPriceLiquidityDemanderSell
-             distOrderLiquidityDemander
+             distOrderCoordinatedDemander 1
           ]
       ]
     ]
   ]
   [
-    if randDraw > ((ProbabilityBuyofLiqyuidityDemander * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
+    if randDraw > ((50 * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
+      print "*********************************************"
+      print priceRatio
       set tradeStatus "Sell"
       distPriceLiquidityDemanderSell
       distOrderLiquidityDemander
@@ -87,7 +103,7 @@ to CoordinatedDemanderStrategy
   ]
 
   
-  hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+  hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity + 1 myself typeOfTrader]
 end
 
 ;*****************************************************************************************************************************

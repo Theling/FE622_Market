@@ -91,7 +91,7 @@ to institutionalTraderStrategy
        set tradeQuantity   sharesOwned
        set tradePrice price - 5
        ]
-     hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+          if(tradeQuantity > 0)[hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity  myself typeOfTrader]]
      ]
 
   ifelse (stopTradingFlag = false) [
@@ -110,7 +110,7 @@ to institutionalTraderStrategy
         distOrderInstitutionalTrader
     ]
   
-    hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+    hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity + 1 myself typeOfTrader]
   ][
        ifelse (sharesOwned < 0)[
        set tradeStatus  "Buy"
@@ -121,7 +121,7 @@ to institutionalTraderStrategy
        set tradeQuantity   sharesOwned
        set tradePrice price - 5
        ]
-     hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity myself typeOfTrader]
+     if(tradeQuantity > 0)[hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity  myself typeOfTrader]]
       if (price < privateViewPrice * tradablePriceRangeMultiplier and price > privateViewPrice * (1 / tradablePriceRangeMultiplier))[set stopTradingFlag false]
   ]
 
