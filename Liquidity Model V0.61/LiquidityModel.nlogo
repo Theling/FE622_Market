@@ -348,9 +348,9 @@ to go
 
       let transactionVar 0
 
-      if (ticks >= 6000)[
-        cancelOrders "Buy" "ForcedSale"
-      ]
+      ;if (ticks >= 6000)[
+      ;  cancelOrders "Buy" "ForcedSale"
+      ;]
       if (ticks > 5000 ) [
         transactionOrder
       ]

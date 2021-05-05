@@ -54,7 +54,7 @@ to CoordinatedDemanderStrategy
     ]
     [ 
      ifelse (priceRatio < (1 / buyThreshold))[
-        ifelse randDraw < ((ProbabilityBuyofLiqyuidityDemander * (1 / (priceRatio + priceRatioAdjust)) * 100) + 125) [
+        ifelse randDraw < ((ProbabilityBuyofLiqyuidityDemander * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
              set tradeStatus "Buy"
              distPriceLiquidityDemanderBuy
              distOrderLiquidityDemander
@@ -79,7 +79,7 @@ to CoordinatedDemanderStrategy
     ]
   ]
   [
-    if randDraw > ((ProbabilityBuyofLiqyuidityDemander * (1 / (priceRatio + priceRatioAdjust)) * 100) + 125) [
+    if randDraw > ((ProbabilityBuyofLiqyuidityDemander * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
       set tradeStatus "Sell"
       distPriceLiquidityDemanderSell
       distOrderLiquidityDemander
