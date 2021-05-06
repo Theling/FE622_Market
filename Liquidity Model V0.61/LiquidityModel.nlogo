@@ -174,7 +174,7 @@ to setup-economy  ;; turtles procedure for setup
   create-traders #_Market_Makers [MM_Setup]
   create-traders #_Liquidity_Supplier[LS_Setup]
   create-traders #_Coordinated_Demander[CD_Setup]
-  create-traders 10 [IT_Setup]
+  create-traders 1 [IT_Setup]
   create-traders 1[FS_Setup]
   create-traders 1[MI_Setup]
 
@@ -258,6 +258,7 @@ to go
     if (typeOfTrader = "ForcedSale" and QuntitySale > 0) [
       if ((countticks >= (5 + tradeSpeedAdjustment)) and (PeriodtoStartExecution < ticks) and (PeriodtoEndExecution >= ticks)) [
         set tradeStatus "Transact"
+        print "--------------------------------"
         set speed 5
       ]
     ]
@@ -797,7 +798,7 @@ to do-plots
   if(ticks >= 5000)[
     set-current-plot "Averages Shared Owned"
     set-current-plot-pen "MM"
-    plot avgSharesMarketMakers
+    plot avgSharesMarketMakers / 100
     set-current-plot-pen "Demander"
     plot avgSharesLiquidityDemander
     set-current-plot-pen "Coordinator"
@@ -1001,7 +1002,7 @@ SLIDER
 #_Liquidity_Demander
 0
 250
-51
+109
 1
 1
 NIL
@@ -1494,7 +1495,7 @@ SLIDER
 #_Liquidity_Supplier
 0
 50
-25
+30
 1
 1
 NIL
@@ -1722,7 +1723,7 @@ INPUTBOX
 867
 306
 QuntitySale
-30
+100
 1
 0
 Number
@@ -1733,7 +1734,7 @@ INPUTBOX
 1003
 306
 PeriodtoStartExecution
-5500
+6000
 1
 0
 Number
@@ -1744,7 +1745,7 @@ INPUTBOX
 1137
 306
 PeriodtoEndExecution
-6000
+6500
 1
 0
 Number
@@ -1952,7 +1953,7 @@ SLIDER
 #_Coordinated_Demander
 0
 500
-201
+112
 1
 1
 NIL
@@ -1964,7 +1965,7 @@ INPUTBOX
 1486
 780
 privateViewPrice
-100
+98
 1
 0
 Number
@@ -1978,7 +1979,7 @@ ProbabilityBuyofInstitutionalTrader
 ProbabilityBuyofInstitutionalTrader
 0
 100
-17.5
+1
 1
 1
 NIL
@@ -2016,7 +2017,7 @@ INPUTBOX
 1810
 308
 priceRatioAdjust
-0.5
+0.3
 1
 0
 Number
@@ -2028,7 +2029,7 @@ SWITCH
 289
 AllowCoordinateBuy
 AllowCoordinateBuy
-0
+1
 1
 -1000
 

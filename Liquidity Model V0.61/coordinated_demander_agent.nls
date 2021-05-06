@@ -79,12 +79,13 @@ to CoordinatedDemanderStrategy
       ]
           
       [
-        ifelse randDraw < ((50 * 100)) [
-          print priceRatio
+        ifelse randDraw < (((50 - (avgSharesCoordinatedDemander) / 0.1) * 100)) [
+          print (list priceRatio (50 - (avgSharesCoordinatedDemander) / 0.1))
              set tradeStatus "Buy"
              distPriceLiquidityDemanderBuy
              distOrderCoordinatedDemander 1
           ][
+
              set tradeStatus "Sell"
              distPriceLiquidityDemanderSell
              distOrderCoordinatedDemander 1
@@ -93,12 +94,16 @@ to CoordinatedDemanderStrategy
     ]
   ]
   [
-    if randDraw > ((50 * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
+    let numBuyer (count traders with [typeOfTrader = "CoordinatedDemander" and tradeStatus = "Sell"])
+    let totoalNumTrader (count traders with [typeOfTrader = "CoordinatedDemander"])
+    if randDraw < ((numBuyer / totoalNumTrader) * 10000) [
       print "*********************************************"
       print priceRatio
       set tradeStatus "Sell"
       distPriceLiquidityDemanderSell
-      distOrderLiquidityDemander
+      let capPriceRatio 0 
+      ifelse (priceRatio > 1) [set capPriceRatio 1][set capPriceRatio priceRatio]
+      distOrderCoordinatedDemander (round (10 / capPriceRatio ^ 6 ))
       ]
   ]
 
