@@ -96,7 +96,7 @@ to CoordinatedDemanderStrategy
   [
     let numBuyer (count traders with [typeOfTrader = "CoordinatedDemander" and tradeStatus = "Sell"])
     let totoalNumTrader (count traders with [typeOfTrader = "CoordinatedDemander"])
-    if randDraw < ((numBuyer / totoalNumTrader) * 10000) [
+    if randDraw < ((1.5 * numBuyer / totoalNumTrader) * 10000) [
       print "*********************************************"
       print priceRatio
       set tradeStatus "Sell"
