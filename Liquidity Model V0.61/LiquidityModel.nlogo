@@ -177,7 +177,7 @@ to setup-economy  ;; turtles procedure for setup
   create-traders #_Market_Makers [MM_Setup]
   create-traders #_Liquidity_Supplier[LS_Setup]
   create-traders #_Coordinated_Demander[CD_Setup]
-  create-traders 5 [IT_Setup]
+  create-traders 10 [IT_Setup]
   create-traders 1[FS_Setup]
   create-traders 1[MI_Setup]
 
@@ -216,7 +216,7 @@ to go
     set marketImpactValue (marketImpactValue - price)
   ]
 
-  if (ticks = 7200) [set AllowCoordinateBuy false]
+  if (ticks = 7000) [set AllowCoordinateBuy false]
   ask traders [
 
     set countticks (countticks + 1)
@@ -799,6 +799,9 @@ to do-plots
     ]
   ]
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   if(ticks >= 5000)[
     set-current-plot "Averages Shared Owned"
     set-current-plot-pen "MM"
@@ -812,8 +815,29 @@ to do-plots
     set-current-plot-pen "Forced"
     plot avgSharesForcedSale / 100
     set-current-plot-pen "Institutions"
+    plot avgSharesInstitutionalTrader * 2
+  ]
+  if(ticks >= 5000)[
+    set-current-plot "Averages Shared Owned(Coordinator)"
+    set-current-plot-pen "Coordinator"
+    plot avgSharesCoordinatedDemander * 10
+  ]
+  if(ticks >= 5000)[
+    set-current-plot "Averages Shared Owned(Supplier)"
+    set-current-plot-pen "Supplier"
+    plot avgSharesLiquiditySupplier
+  ]
+  if(ticks >= 5000)[
+    set-current-plot "Averages Shared Owned(Forced)"
+    set-current-plot-pen "Forced"
+    plot avgSharesForcedSale / 100
+  ]
+  if(ticks >= 5000)[
+    set-current-plot "Averages Shared Owned(Institutions)"
+    set-current-plot-pen "Institutions"
     plot avgSharesInstitutionalTrader
   ]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   if(ticks >= 6000)[
     set-current-plot "Kyle Obizhaeva Measure"
@@ -906,10 +930,10 @@ to-report frequency [val thelist]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-534
-759
-945
-1191
+526
+1403
+937
+1835
 200
 200
 1.0
@@ -1073,10 +1097,10 @@ TEXTBOX
 1
 
 PLOT
-9
-613
-656
-733
+1
+1257
+648
+1377
 Price
 Time (1 Min)
 Price
@@ -1091,10 +1115,10 @@ PENS
 "default" 1.0 0 -16777216 true "" ""
 
 PLOT
-9
-732
-656
-852
+1
+1376
+648
+1496
 Volume
 Time (10 Min)
 Qty
@@ -1109,10 +1133,10 @@ PENS
 "default" 1.0 0 -16777216 true "" ""
 
 PLOT
-9
-851
-656
-971
+1
+1495
+648
+1615
 Volatility
 Time (1 Hr)
 NIL
@@ -1127,10 +1151,10 @@ PENS
 "default" 1.0 0 -16777216 true "" ""
 
 MONITOR
-599
-731
-656
-776
+591
+1375
+648
+1420
 Volume
 int (totalVolume)
 17
@@ -1138,10 +1162,10 @@ int (totalVolume)
 11
 
 MONITOR
-597
-851
-656
-896
+589
+1495
+648
+1540
 Volatility
 precision (sqrt(abs (item ((length priceReturns) - 1) priceReturns)) * 15.87) 4
 17
@@ -1149,10 +1173,10 @@ precision (sqrt(abs (item ((length priceReturns) - 1) priceReturns)) * 15.87) 4
 11
 
 MONITOR
-599
-613
-656
-658
+591
+1257
+648
+1302
 Price
 (price / 4)
 17
@@ -1160,10 +1184,10 @@ Price
 11
 
 PLOT
-10
-971
-655
-1091
+2
+1615
+647
+1735
 Ten Minute Moving Average Price
 Time (10 Min))
 MA Price
@@ -1178,10 +1202,10 @@ PENS
 "default" 1.0 0 -16777216 true "" ""
 
 MONITOR
-596
-972
-655
-1017
+588
+1616
+647
+1661
 MAP
 precision currentMA  2
 17
@@ -1189,10 +1213,10 @@ precision currentMA  2
 11
 
 PLOT
-10
-1091
-655
-1211
+2
+1735
+647
+1855
 Ten Minute Moving Average Volume
 Time (1 Min)
 NIL
@@ -1207,10 +1231,10 @@ PENS
 "default" 1.0 0 -16777216 true "" ""
 
 MONITOR
-598
-1092
-655
-1137
+590
+1736
+647
+1781
 MAV
 precision currentMAV 2
 17
@@ -1218,10 +1242,10 @@ precision currentMAV 2
 11
 
 PLOT
-655
-733
-1304
-853
+647
+1377
+1296
+1497
 Market Depth
 Time (1 Min)
 Qty
@@ -1237,10 +1261,10 @@ PENS
 "Ask" 1.0 0 -2674135 true "" ""
 
 PLOT
-655
-613
-1303
-734
+647
+1257
+1295
+1378
 Bid-Ask Spread
 Time (1 Min)
 Spread Diff
@@ -1255,10 +1279,10 @@ PENS
 "default" 1.0 0 -16777216 true "" ""
 
 PLOT
-655
-852
-1304
-972
+647
+1496
+1296
+1616
 Turnover Rate
 Time (1 Min)
 Volume/Stock
@@ -1273,10 +1297,10 @@ PENS
 "default" 1.0 0 -16777216 true "" ""
 
 PLOT
-655
-1092
-1306
-1212
+647
+1736
+1298
+1856
 Price Returns
 NIL
 NIL
@@ -1291,10 +1315,10 @@ PENS
 "default" 1.0 0 -16777216 true "" ""
 
 TEXTBOX
-591
-587
-741
-607
+583
+1231
+733
+1251
 Market Measures
 16
 0.0
@@ -1309,7 +1333,7 @@ marketMakerTradeLength
 marketMakerTradeLength
 0
 60
-10
+30
 10
 1
 NIL
@@ -1358,10 +1382,10 @@ TEXTBOX
 1
 
 PLOT
-655
-972
-1305
-1092
+647
+1616
+1297
+1736
 Aggressive Trades
 Time (10 Min)
 Qty
@@ -1584,7 +1608,7 @@ market_Makers_Arrival_Rate
 market_Makers_Arrival_Rate
 0
 120
-120
+95
 5
 1
 NIL
@@ -1812,10 +1836,10 @@ Quantity to Buy     Tick Start Buying             Tick End Buying       Number o
 1
 
 MONITOR
-1187
-1092
-1249
-1137
+1176
+1739
+1238
+1784
 Mean
 mean(priceReturns)
 4
@@ -1823,10 +1847,10 @@ mean(priceReturns)
 11
 
 MONITOR
-1249
-1092
-1306
-1137
+1238
+1739
+1295
+1784
 StdDev
 standard-deviation(priceReturns)
 4
@@ -1834,10 +1858,10 @@ standard-deviation(priceReturns)
 11
 
 PLOT
-655
-1211
-1306
-1331
+647
+1855
+1298
+1975
 Daily Price
 NIL
 NIL
@@ -1883,7 +1907,7 @@ SWITCH
 177
 DepthFile
 DepthFile
-1
+0
 1
 -1000
 
@@ -1931,10 +1955,10 @@ MIPeriod
 Number
 
 PLOT
-10
-1211
-655
-1331
+2
+1855
+647
+1975
 Kyle Obizhaeva Measure
 NIL
 NIL
@@ -2043,7 +2067,7 @@ INPUTBOX
 1676
 784
 tradablePriceRangeMultiplier
-1.25
+1.4
 1
 0
 Number
@@ -2058,6 +2082,78 @@ isRational
 0
 1
 -1000
+
+PLOT
+11
+596
+649
+746
+Averages Shared Owned(Coordinator)
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Coordinator" 1.0 0 -16777216 true "" ""
+
+PLOT
+12
+757
+649
+907
+Averages Shared Owned(Supplier)
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Supplier" 1.0 0 -16777216 true "" ""
+
+PLOT
+654
+758
+1296
+908
+Averages Shared Owned(Forced)
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Forced" 1.0 0 -16777216 true "" ""
+
+PLOT
+652
+596
+1294
+746
+Averages Shared Owned(Institutions)
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Institutions" 1.0 0 -16777216 true "" ""
 
 @#$#@#$#@
 ## ## WHAT IS IT?
