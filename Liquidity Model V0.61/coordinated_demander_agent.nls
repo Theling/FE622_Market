@@ -3,7 +3,7 @@
 to CD_Setup 
   set typeOfTrader "CoordinatedDemander"
   set speed (random-poisson liquidity_Demander_Arrival_Rate) + 1
-  set tradeSpeedAdjustment (random 30) + 1
+  set tradeSpeedAdjustment 5
   set tradeStatus "Transact"
   set orderNumber 0
   set countticks 0
@@ -49,37 +49,11 @@ to CoordinatedDemanderStrategy
 ;  let numBuyer (count traders with [typeOfTrader = "CoordinatedDemander" and tradeStatus = "Buy"])
 ;  let totoalNumTrader (count traders with [typeOfTrader = "CoordinatedDemander"])
   let priceRatio  (price / 4) / currentMA
-  ifelse (allowCoordinateBuy = True)[
-    ifelse (priceRatio > buyThreshold)[
-      print "priceRatio > buyThreshold"
-      print priceRatio
-        ifelse randDraw < ((50 * (priceRatio + priceRatioAdjust) * 100) + 125) [
-             set tradeStatus "Buy"
-             distPriceLiquidityDemanderBuy
-             distOrderCoordinatedDemander 10
-          ][
-             set tradeStatus "Sell"
-             distPriceLiquidityDemanderSell
-             distOrderCoordinatedDemander 5
-             ]
-    ]
-    [ 
-     ifelse (priceRatio < (1 / buyThreshold))[
-      print "priceRatio < buyThreshold"
-      print priceRatio
-        ifelse randDraw < ((50 * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
-             set tradeStatus "Buy"
-             distPriceLiquidityDemanderBuy
-             distOrderCoordinatedDemander 5
-          ][
-             set tradeStatus "Sell"
-             distPriceLiquidityDemanderSell
-             distOrderCoordinatedDemander 10
-             ]
-      ]
-          
-      [
+  ifelse (allowCoordinateBuy = true)[
+    print isRational
+    ifelse (isRational = true) [
         ifelse randDraw < (((50 - (avgSharesCoordinatedDemander) / 0.1) * 100)) [
+          set tradeSpeedAdjustment (random 30) + 1
           print (list priceRatio (50 - (avgSharesCoordinatedDemander) / 0.1))
              set tradeStatus "Buy"
              distPriceLiquidityDemanderBuy
@@ -90,21 +64,68 @@ to CoordinatedDemanderStrategy
              distPriceLiquidityDemanderSell
              distOrderCoordinatedDemander 1
           ]
-      ]
+          if ((priceRatio > buyThreshold or priceRatio < (1 / buyThreshold) ) and (ticks < 6800)) [set isRational  false] 
+    ][
+        ifelse (priceRatio > buyThreshold)[
+        set tradeSpeedAdjustment -30
+        print "priceRatio > buyThreshold"
+        print priceRatio
+        ifelse randDraw < ((50 * (priceRatio + priceRatioAdjust) * 100) + 125) [
+             set tradeStatus "Buy"
+             distPriceLiquidityDemanderBuy
+             distOrderCoordinatedDemander 10
+          ][
+             set tradeStatus "Sell"
+             distPriceLiquidityDemanderSell
+             distOrderCoordinatedDemander 5
+             ]
+        ]
+        [
+          set tradeSpeedAdjustment -30
+          print "priceRatio < buyThreshold"
+          print priceRatio
+            ifelse randDraw < ((50 * ((priceRatio - priceRatioAdjust)) * 100) + 125) [
+                set tradeStatus "Buy"
+                distPriceLiquidityDemanderBuy
+                distOrderCoordinatedDemander 5
+              ][
+                set tradeStatus "Sell"
+                distPriceLiquidityDemanderSell
+                distOrderCoordinatedDemander 10
+                ]
+        ]
+
     ]
+
   ]
-  [
+  [ if tradeSpeedAdjustment = -30 [ ; this is a nasty condition
+    let anotherRandomDraw random 100
+    if anotherRandomDraw < 51 [set tradeStatus  "Sell"]
+    ]
     let numBuyer (count traders with [typeOfTrader = "CoordinatedDemander" and tradeStatus = "Sell"])
     let totoalNumTrader (count traders with [typeOfTrader = "CoordinatedDemander"])
-    if randDraw < ((1.5 * numBuyer / totoalNumTrader) * 10000) [
-      print "*********************************************"
-      print priceRatio
-      set tradeStatus "Sell"
-      distPriceLiquidityDemanderSell
-      let capPriceRatio 0 
-      ifelse (priceRatio > 1) [set capPriceRatio 1][set capPriceRatio priceRatio]
-      distOrderCoordinatedDemander (round (10 / capPriceRatio ^ 6 ))
+    let sellPopulationRatio numBuyer / totoalNumTrader
+    ifelse (avgSharesCoordinatedDemander < -20)
+          [
+          set AllowCoordinateBuy true
+          set isRational true
+          print (list AllowCoordinateBuy isRational)
       ]
+      [    
+        if randDraw < ((1.1 * sellPopulationRatio) * 10000) [
+        print "*********************************************"
+        print priceRatio
+        set tradeStatus "Sell"
+        set tradeSpeedAdjustment -50
+        set tradePrice price - 5
+        let capPriceRatio 0 
+        ifelse (priceRatio > 1) [set capPriceRatio 1][set capPriceRatio priceRatio]
+        distOrderCoordinatedDemander (round (10 / capPriceRatio ^ 6 ))
+      ]
+
+      ]
+
+    
   ]
 
   

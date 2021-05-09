@@ -162,6 +162,9 @@ to setup
   carefully [writeFileTitles][]
   carefully [writeFileTitleDepth][]
   carefully [writeFileTitleAgent][]
+
+  set AllowCoordinateBuy true
+  set isRational true
 end
 
 ;********************************************************************************************************************************************************************************
@@ -174,7 +177,7 @@ to setup-economy  ;; turtles procedure for setup
   create-traders #_Market_Makers [MM_Setup]
   create-traders #_Liquidity_Supplier[LS_Setup]
   create-traders #_Coordinated_Demander[CD_Setup]
-  create-traders 1 [IT_Setup]
+  create-traders 5 [IT_Setup]
   create-traders 1[FS_Setup]
   create-traders 1[MI_Setup]
 
@@ -213,6 +216,7 @@ to go
     set marketImpactValue (marketImpactValue - price)
   ]
 
+  if (ticks = 7200) [set AllowCoordinateBuy false]
   ask traders [
 
     set countticks (countticks + 1)
@@ -1580,7 +1584,7 @@ market_Makers_Arrival_Rate
 market_Makers_Arrival_Rate
 0
 120
-10
+120
 5
 1
 NIL
@@ -1879,7 +1883,7 @@ SWITCH
 177
 DepthFile
 DepthFile
-0
+1
 1
 -1000
 
@@ -1890,7 +1894,7 @@ SWITCH
 211
 AgentFile
 AgentFile
-0
+1
 1
 -1000
 
@@ -2023,13 +2027,13 @@ priceRatioAdjust
 Number
 
 SWITCH
-1296
+1297
+223
+1404
 256
-1403
-289
 AllowCoordinateBuy
 AllowCoordinateBuy
-1
+0
 1
 -1000
 
@@ -2039,10 +2043,21 @@ INPUTBOX
 1676
 784
 tradablePriceRangeMultiplier
-2
+1.25
 1
 0
 Number
+
+SWITCH
+1301
+269
+1418
+302
+isRational
+isRational
+0
+1
+-1000
 
 @#$#@#$#@
 ## ## WHAT IS IT?

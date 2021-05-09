@@ -82,6 +82,8 @@ to institutionalTraderStrategy
   set openorders []
    if ((price / 4) > privateViewPrice * tradablePriceRangeMultiplier or price < privateViewPrice * (1 / tradablePriceRangeMultiplier))[
      set stopTradingFlag true
+     print (list "IT agent" "stopTradingFlag" stopTradingFlag)
+     set tradeSpeedAdjustment -50
      ifelse (sharesOwned < 0)[
        set tradeStatus  "Buy"
        set tradeQuantity  ( 0 - sharesOwned)
@@ -98,6 +100,7 @@ to institutionalTraderStrategy
     let randDraw random 10000
     let tempProb (50 - (price / 4 - privateViewPrice) * 10 )
     set ProbabilityBuyofInstitutionalTrader tempProb
+    set tradeSpeedAdjustment 0
     if(tempProb > 99) [set ProbabilityBuyofInstitutionalTrader 99]
     if(tempProb < 1) [set ProbabilityBuyofInstitutionalTrader 1]
     ifelse randDraw < ((ProbabilityBuyofInstitutionalTrader * 100) + 125) [
@@ -112,6 +115,7 @@ to institutionalTraderStrategy
   
     hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity + 1 myself typeOfTrader]
   ][
+       set tradeSpeedAdjustment -50
        ifelse (sharesOwned < 0)[
        set tradeStatus  "Buy"
        set tradeQuantity  ( 0 - sharesOwned)
