@@ -1907,7 +1907,7 @@ SWITCH
 177
 DepthFile
 DepthFile
-0
+1
 1
 -1000
 

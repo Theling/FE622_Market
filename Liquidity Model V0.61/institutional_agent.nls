@@ -103,16 +103,21 @@ to institutionalTraderStrategy
     set tradeSpeedAdjustment 0
     if(tempProb > 99) [set ProbabilityBuyofInstitutionalTrader 99]
     if(tempProb < 1) [set ProbabilityBuyofInstitutionalTrader 1]
+    
     ifelse randDraw < ((ProbabilityBuyofInstitutionalTrader * 100) + 125) [
+      if ( avgSharesInstitutionalTrader < 150 )[
         set tradeStatus "Buy"
         distPriceInstitutionalTraderBuy
         distOrderInstitutionalTrader
+      ]
     ][
+      if ( avgSharesInstitutionalTrader > -150 )[
         set tradeStatus "Sell"
         distPriceInstitutionalTraderSell
         distOrderInstitutionalTrader
+      ]
     ]
-  
+    
     hatch-orders 1 [Order_Setup tradePrice tradeStatus traderNumber tradeQuantity + 1 myself typeOfTrader]
   ][
        set tradeSpeedAdjustment -50
